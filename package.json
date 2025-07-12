@@ -84,5 +84,8 @@
     "android": {
       "src": "android"
     }
+  },
+  "dependencies": {
+    "@capgo/native-purchases": "github:AirlinersLive/capacitor-native-purchases"
   }
 }

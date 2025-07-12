@@ -1,6 +1,7 @@
 import XCTest
 @testable import NativePurchasesPlugin
 
+<<<<<<< HEAD:ios/Tests/NativePurchasesPluginTests/NativePurchasesPluginTests.swift
 class SocialLoginTests: XCTestCase {
     func testEcho() {
         // This is an example of a functional test case for a plugin.
@@ -11,5 +12,12 @@ class SocialLoginTests: XCTestCase {
         let result = implementation.echo(value)
 
         XCTAssertEqual(value, result)
+=======
+    func testPluginVersion() {
+        // Test that the plugin version can be retrieved
+        let plugin = NativePurchasesPlugin()
+        XCTAssertEqual(plugin.identifier, "NativePurchasesPlugin")
+        XCTAssertEqual(plugin.jsName, "NativePurchases")
+>>>>>>> 33d7ce7 (Updated plugin to include full payload from StoreKit):ios/PluginTests/NativePurchasesTests.swift
     }
 }

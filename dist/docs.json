@@ -1,0 +1,583 @@
+{
+  "api": {
+    "name": "NativePurchasesPlugin",
+    "slug": "nativepurchasesplugin",
+    "docs": "",
+    "tags": [],
+    "methods": [
+      {
+        "name": "restorePurchases",
+        "signature": "() => Promise<{ transactions: Transaction[]; }>",
+        "parameters": [],
+        "returns": "Promise<{ transactions: Transaction[]; }>",
+        "tags": [],
+        "docs": "Restores a user's previous  and links their appUserIDs to any user's also using those .",
+        "complexTypes": [
+          "Transaction"
+        ],
+        "slug": "restorepurchases"
+      },
+      {
+        "name": "purchaseProduct",
+        "signature": "(options: { productIdentifier: string; planIdentifier?: string; productType?: PURCHASE_TYPE; quantity?: number; }) => Promise<Transaction>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "- The product to purchase",
+            "type": "{ productIdentifier: string; planIdentifier?: string | undefined; productType?: PURCHASE_TYPE | undefined; quantity?: number | undefined; }"
+          }
+        ],
+        "returns": "Promise<Transaction>",
+        "tags": [
+          {
+            "name": "param",
+            "text": "options - The product to purchase"
+          },
+          {
+            "name": "param",
+            "text": "options.productIdentifier - The product identifier of the product you want to purchase."
+          },
+          {
+            "name": "param",
+            "text": "options.productType - Only Android, the type of product, can be inapp or subs. Will use inapp by default."
+          },
+          {
+            "name": "param",
+            "text": "options.planIdentifier - Only Android, the identifier of the plan you want to purchase, require for for subs."
+          },
+          {
+            "name": "param",
+            "text": "options.quantity - Only iOS, the number of items you wish to purchase. Will use 1 by default."
+          }
+        ],
+        "docs": "Started purchase process for the given product.",
+        "complexTypes": [
+          "Transaction",
+          "PURCHASE_TYPE"
+        ],
+        "slug": "purchaseproduct"
+      },
+      {
+        "name": "getProducts",
+        "signature": "(options: { productIdentifiers: string[]; productType?: PURCHASE_TYPE; }) => Promise<{ products: Product[]; }>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "- The product identifiers you wish to retrieve information for",
+            "type": "{ productIdentifiers: string[]; productType?: PURCHASE_TYPE | undefined; }"
+          }
+        ],
+        "returns": "Promise<{ products: Product[]; }>",
+        "tags": [
+          {
+            "name": "param",
+            "text": "options - The product identifiers you wish to retrieve information for"
+          },
+          {
+            "name": "param",
+            "text": "options.productIdentifiers - Array of product identifiers"
+          },
+          {
+            "name": "param",
+            "text": "options.productType - Only Android, the type of product, can be inapp or subs. Will use inapp by default."
+          },
+          {
+            "name": "returns",
+            "text": "- The requested product info"
+          }
+        ],
+        "docs": "Gets the product info associated with a list of product identifiers.",
+        "complexTypes": [
+          "Product",
+          "PURCHASE_TYPE"
+        ],
+        "slug": "getproducts"
+      },
+      {
+        "name": "getProduct",
+        "signature": "(options: { productIdentifier: string; productType?: PURCHASE_TYPE; }) => Promise<{ product: Product; }>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "- The product identifier you wish to retrieve information for",
+            "type": "{ productIdentifier: string; productType?: PURCHASE_TYPE | undefined; }"
+          }
+        ],
+        "returns": "Promise<{ product: Product; }>",
+        "tags": [
+          {
+            "name": "param",
+            "text": "options - The product identifier you wish to retrieve information for"
+          },
+          {
+            "name": "param",
+            "text": "options.productIdentifier - The product identifier"
+          },
+          {
+            "name": "param",
+            "text": "options.productType - Only Android, the type of product, can be inapp or subs. Will use inapp by default."
+          },
+          {
+            "name": "returns",
+            "text": "- The requested product info"
+          }
+        ],
+        "docs": "Gets the product info for a single product identifier.",
+        "complexTypes": [
+          "Product",
+          "PURCHASE_TYPE"
+        ],
+        "slug": "getproduct"
+      },
+      {
+        "name": "isBillingSupported",
+        "signature": "() => Promise<{ isBillingSupported: boolean; }>",
+        "parameters": [],
+        "returns": "Promise<{ isBillingSupported: boolean; }>",
+        "tags": [],
+        "docs": "Check if billing is supported for the current device.",
+        "complexTypes": [],
+        "slug": "isbillingsupported"
+      },
+      {
+        "name": "getPluginVersion",
+        "signature": "() => Promise<{ version: string; }>",
+        "parameters": [],
+        "returns": "Promise<{ version: string; }>",
+        "tags": [
+          {
+            "name": "returns",
+            "text": "an Promise with version for this device"
+          },
+          {
+            "name": "throws",
+            "text": "An error if the something went wrong"
+          }
+        ],
+        "docs": "Get the native Capacitor plugin version",
+        "complexTypes": [],
+        "slug": "getpluginversion"
+      },
+      {
+        "name": "getLatestSignedTransaction",
+        "signature": "() => Promise<{ jwt: string; }>",
+        "parameters": [],
+        "returns": "Promise<{ jwt: string; }>",
+        "tags": [
+          {
+            "name": "returns",
+            "text": "Promise with the JWT token"
+          },
+          {
+            "name": "throws",
+            "text": "An error if no transactions found or StoreKit 2 not available"
+          }
+        ],
+        "docs": "Get the latest signed transaction JWT token. iOS only.",
+        "complexTypes": [],
+        "slug": "getlatestsignedtransaction"
+      },
+      {
+        "name": "showManageSubscriptions",
+        "signature": "() => Promise<void>",
+        "parameters": [],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "showmanagesubscriptions"
+      }
+    ],
+    "properties": []
+  },
+  "interfaces": [
+    {
+      "name": "Transaction",
+      "slug": "transaction",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "transactionId",
+          "tags": [],
+          "docs": "The unique transaction identifier.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "originalTransactionId",
+          "tags": [],
+          "docs": "The original transaction identifier (for renewals). iOS only.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "productId",
+          "tags": [],
+          "docs": "Product identifier associated with the transaction.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "quantity",
+          "tags": [],
+          "docs": "Purchase quantity. iOS only.",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "purchaseDate",
+          "tags": [],
+          "docs": "Purchase date in milliseconds since epoch. iOS only.",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "originalPurchaseDate",
+          "tags": [],
+          "docs": "Original purchase date in milliseconds since epoch. iOS only.",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "signedDate",
+          "tags": [],
+          "docs": "Transaction signed date in milliseconds since epoch. iOS only.",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "transactionReason",
+          "tags": [],
+          "docs": "Transaction reason (PURCHASE, RENEWAL, etc.). iOS only.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "environment",
+          "tags": [],
+          "docs": "App Store environment (Sandbox/Production). iOS only.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "storefront",
+          "tags": [],
+          "docs": "App Store storefront. iOS only.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "storefrontId",
+          "tags": [],
+          "docs": "App Store storefront identifier. iOS only.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "price",
+          "tags": [],
+          "docs": "Transaction price. iOS only.",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "currency",
+          "tags": [],
+          "docs": "Currency code. iOS only.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "subscriptionGroupId",
+          "tags": [],
+          "docs": "Subscription group identifier (for subscriptions). iOS only.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "webOrderLineItemId",
+          "tags": [],
+          "docs": "Web order line item identifier. iOS only.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "appTransactionId",
+          "tags": [],
+          "docs": "App transaction identifier. iOS only.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "bundleId",
+          "tags": [],
+          "docs": "App bundle identifier. iOS only.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "deviceVerification",
+          "tags": [],
+          "docs": "Device verification data. iOS only.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "deviceVerificationNonce",
+          "tags": [],
+          "docs": "Device verification nonce. iOS only.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "inAppOwnershipType",
+          "tags": [],
+          "docs": "In-app ownership type (PURCHASED, FAMILY_SHARED, etc.). iOS only.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "jwt",
+          "tags": [],
+          "docs": "Signed transaction JWT token. iOS only.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "expiresDate",
+          "tags": [],
+          "docs": "Expiration date for subscriptions (in milliseconds since epoch). iOS only.",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "type",
+          "tags": [],
+          "docs": "Product type (Auto-Renewable Subscription, Consumable, etc.). iOS only.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        }
+      ]
+    },
+    {
+      "name": "Product",
+      "slug": "product",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "identifier",
+          "tags": [],
+          "docs": "Product Id.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "tags": [],
+          "docs": "Description of the product.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "title",
+          "tags": [],
+          "docs": "Title of the product.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "price",
+          "tags": [],
+          "docs": "Price of the product in the local currency.",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "priceString",
+          "tags": [],
+          "docs": "Formatted price of the item, including its currency sign, such as €3.99.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "currencyCode",
+          "tags": [],
+          "docs": "Currency code for price and original price.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "currencySymbol",
+          "tags": [],
+          "docs": "Currency symbol for price and original price.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "isFamilyShareable",
+          "tags": [],
+          "docs": "Boolean indicating if the product is sharable with family",
+          "complexTypes": [],
+          "type": "boolean"
+        },
+        {
+          "name": "subscriptionGroupIdentifier",
+          "tags": [],
+          "docs": "Group identifier for the product.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "subscriptionPeriod",
+          "tags": [],
+          "docs": "The Product subcription group identifier.",
+          "complexTypes": [
+            "SubscriptionPeriod"
+          ],
+          "type": "SubscriptionPeriod"
+        },
+        {
+          "name": "introductoryPrice",
+          "tags": [],
+          "docs": "The Product introductory Price.",
+          "complexTypes": [
+            "SKProductDiscount"
+          ],
+          "type": "SKProductDiscount | null"
+        },
+        {
+          "name": "discounts",
+          "tags": [],
+          "docs": "The Product discounts list.",
+          "complexTypes": [
+            "SKProductDiscount"
+          ],
+          "type": "SKProductDiscount[]"
+        }
+      ]
+    },
+    {
+      "name": "SubscriptionPeriod",
+      "slug": "subscriptionperiod",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "numberOfUnits",
+          "tags": [],
+          "docs": "The Subscription Period number of unit.",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "unit",
+          "tags": [],
+          "docs": "The Subscription Period unit.",
+          "complexTypes": [],
+          "type": "number"
+        }
+      ]
+    },
+    {
+      "name": "SKProductDiscount",
+      "slug": "skproductdiscount",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "identifier",
+          "tags": [],
+          "docs": "The Product discount identifier.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "type",
+          "tags": [],
+          "docs": "The Product discount type.",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "price",
+          "tags": [],
+          "docs": "The Product discount price.",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "priceString",
+          "tags": [],
+          "docs": "Formatted price of the item, including its currency sign, such as €3.99.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "currencySymbol",
+          "tags": [],
+          "docs": "The Product discount currency symbol.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "currencyCode",
+          "tags": [],
+          "docs": "The Product discount currency code.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "paymentMode",
+          "tags": [],
+          "docs": "The Product discount paymentMode.",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "numberOfPeriods",
+          "tags": [],
+          "docs": "The Product discount number Of Periods.",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "subscriptionPeriod",
+          "tags": [],
+          "docs": "The Product discount subscription period.",
+          "complexTypes": [
+            "SubscriptionPeriod"
+          ],
+          "type": "SubscriptionPeriod"
+        }
+      ]
+    }
+  ],
+  "enums": [
+    {
+      "name": "PURCHASE_TYPE",
+      "slug": "purchase_type",
+      "members": [
+        {
+          "name": "INAPP",
+          "value": "\"inapp\"",
+          "tags": [],
+          "docs": "A type of SKU for in-app products."
+        },
+        {
+          "name": "SUBS",
+          "value": "\"subs\"",
+          "tags": [],
+          "docs": "A type of SKU for subscriptions."
+        }
+      ]
+    }
+  ],
+  "typeAliases": [],
+  "pluginConfigs": []
+}

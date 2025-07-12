@@ -145,9 +145,13 @@ export enum INTRO_ELIGIBILITY_STATUS {
 
 export interface Transaction {
   /**
-   * RevenueCat Id associated to the transaction.
+   * The unique transaction identifier.
    */
   readonly transactionId: string;
+  /**
+   * The original transaction identifier (for renewals). iOS only.
+   */
+  readonly originalTransactionId?: string;
   /**
    * Receipt data for validation (iOS only - base64 encoded receipt)
    */
@@ -155,19 +159,35 @@ export interface Transaction {
   /**
    * Product Id associated with the transaction.
    */
-  readonly productIdentifier: string;
+  readonly productIdentifier?: string;
   /**
-   * Purchase date of the transaction in ISO 8601 format.
+   * Product identifier associated with the transaction. iOS only.
    */
-  readonly purchaseDate: string;
+  readonly productId?: string;
   /**
-   * Original purchase date of the transaction in ISO 8601 format (for subscriptions).
+   * Purchase quantity. iOS only.
    */
-  readonly originalPurchaseDate?: string;
+  readonly quantity?: number;
+  /**
+   * Purchase date (string in ISO 8601 format for Android, number in milliseconds since epoch for iOS).
+   */
+  readonly purchaseDate?: string | number;
+  /**
+   * Original purchase date (string in ISO 8601 format for Android, number in milliseconds since epoch for iOS).
+   */
+  readonly originalPurchaseDate?: string | number;
+  /**
+   * Transaction signed date in milliseconds since epoch. iOS only.
+   */
+  readonly signedDate?: number;
   /**
    * Expiration date of the transaction in ISO 8601 format (for subscriptions).
    */
   readonly expirationDate?: string;
+  /**
+   * Expiration date for subscriptions (in milliseconds since epoch). iOS only.
+   */
+  readonly expiresDate?: number;
   /**
    * Whether the transaction is still active/valid.
    */
@@ -175,11 +195,67 @@ export interface Transaction {
   /**
    * Whether the subscription will be cancelled at the end of the billing cycle, or null if not cancelled. Only available on iOS.
    */
-  readonly willCancel: boolean | null;
+  readonly willCancel?: boolean | null;
   /**
    * Purchase state of the transaction.
    */
   readonly purchaseState?: string;
+  /**
+   * Transaction reason (PURCHASE, RENEWAL, etc.). iOS only.
+   */
+  readonly transactionReason?: string;
+  /**
+   * App Store environment (Sandbox/Production). iOS only.
+   */
+  readonly environment?: string;
+  /**
+   * App Store storefront. iOS only.
+   */
+  readonly storefront?: string;
+  /**
+   * App Store storefront identifier. iOS only.
+   */
+  readonly storefrontId?: string;
+  /**
+   * Transaction price. iOS only.
+   */
+  readonly price?: number;
+  /**
+   * Currency code. iOS only.
+   */
+  readonly currency?: string;
+  /**
+   * Subscription group identifier (for subscriptions). iOS only.
+   */
+  readonly subscriptionGroupId?: string;
+  /**
+   * Web order line item identifier. iOS only.
+   */
+  readonly webOrderLineItemId?: string;
+  /**
+   * App transaction identifier. iOS only.
+   */
+  readonly appTransactionId?: string;
+  /**
+   * App bundle identifier. iOS only.
+   */
+  readonly bundleId?: string;
+  /**
+   * Device verification data. iOS only.
+   */
+  readonly deviceVerification?: string;
+  /**
+   * Device verification nonce. iOS only.
+   */
+  readonly deviceVerificationNonce?: string;
+  /**
+   * In-app ownership type (PURCHASED, FAMILY_SHARED, etc.). iOS only.
+   */
+  readonly inAppOwnershipType?: string;
+  /**
+   * Signed transaction JWT token. iOS only.
+   */
+  readonly jwt?: string;
   /**
    * Order ID associated with the transaction (Android).
    */
@@ -193,13 +269,13 @@ export interface Transaction {
    */
   readonly isAcknowledged?: boolean;
   /**
-   * Quantity purchased.
-   */
-  readonly quantity?: number;
-  /**
    * Product type (inapp or subs).
    */
   readonly productType?: string;
+  /**
+   * Product type (Auto-Renewable Subscription, Consumable, etc.). iOS only.
+   */
+  readonly type?: string;
   /**
    * Whether the transaction is a trial period.
    */
@@ -317,7 +393,8 @@ export interface NativePurchasesPlugin {
   /**
    * Restores a user's previous  and links their appUserIDs to any user's also using those .
    */
-  restorePurchases(): Promise<void>;
+  restorePurchases(): Promise<{ transactions: Transaction[] }>;
+
 
   /**
    * Started purchase process for the given product.
@@ -369,6 +446,7 @@ export interface NativePurchasesPlugin {
    *
    */
   isBillingSupported(): Promise<{ isBillingSupported: boolean }>;
+  
   /**
    * Get the native Capacitor plugin version
    *
@@ -390,6 +468,19 @@ export interface NativePurchasesPlugin {
   getPurchases(options?: {
     productType?: PURCHASE_TYPE;
   }): Promise<{ purchases: Transaction[] }>;
+
+  /**
+   * Get the latest signed transaction JWT token. iOS only.
+   *
+   * @returns {Promise<{ jwt: string }>} Promise with the JWT token
+   * @throws An error if no transactions found or StoreKit 2 not available
+   */
+  getLatestSignedTransaction(): Promise<{ jwt: string }>;
+
+  /**
+   * Opens the native subscription management interface for the user.
+   */
+  showManageSubscriptions(): Promise<void>;
 
   /**
    * Listen for StoreKit transaction updates delivered by Apple's Transaction.updates.
