@@ -25,6 +25,18 @@ Add this to manifest
 <uses-permission android:name="com.android.vending.BILLING" />
 ```
 
+### Testing with Google Play Console
+
+For testing in-app purchases on Android:
+
+1. Upload your app to Google Play Console (internal testing track is sufficient)
+2. Create test accounts in Google Play Console:
+   - Go to Google Play Console
+   - Navigate to "Setup" > "License testing"
+   - Add Gmail accounts to "License testers" list
+3. Install the app from Google Play Store on a device signed in with a test account
+4. Test purchases will be free and won't charge real money
+
 ## iOS
 
 Add the "In-App Purchase" capability to your Xcode project:
@@ -34,6 +46,18 @@ Add the "In-App Purchase" capability to your Xcode project:
 3. Go to "Signing & Capabilities" tab
 4. Click the "+" button to add a capability
 5. Search for and add "In-App Purchase"
+
+### Testing with Sandbox
+
+For testing in-app purchases on iOS:
+
+1. Create a sandbox test user in App Store Connect:
+   - Go to App Store Connect
+   - Navigate to "Users and Access" > "Sandbox Testers"
+   - Create a new sandbox tester account
+2. On your iOS device, sign out of your regular Apple ID in Settings > App Store
+3. Install and run your app
+4. When prompted for Apple ID during purchase testing, use your sandbox account credentials
 
 ## Usage
 
