@@ -25,6 +25,16 @@ Add this to manifest
 <uses-permission android:name="com.android.vending.BILLING" />
 ```
 
+## iOS
+
+Add the "In-App Purchase" capability to your Xcode project:
+
+1. Open your project in Xcode
+2. Select your app target
+3. Go to "Signing & Capabilities" tab
+4. Click the "+" button to add a capability
+5. Search for and add "In-App Purchase"
+
 ## Usage
 
 Import the plugin in your TypeScript file:
