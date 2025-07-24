@@ -375,15 +375,14 @@ public class NativePurchasesPlugin extends Plugin {
       return;
     }
 
-    String productId = productType.equals("inapp")
-      ? productIdentifier
-      : planIdentifier;
-    Log.d(TAG, "Using product ID for query: " + productId);
+    // For subscriptions, always use the productIdentifier (subscription ID) to query
+    // The planIdentifier is used later when setting the offer token
+    Log.d(TAG, "Using product ID for query: " + productIdentifier);
 
     ImmutableList<QueryProductDetailsParams.Product> productList =
       ImmutableList.of(
         QueryProductDetailsParams.Product.newBuilder()
-          .setProductId(productId)
+          .setProductId(productIdentifier)
           .setProductType(
             productType.equals("inapp")
               ? BillingClient.ProductType.INAPP

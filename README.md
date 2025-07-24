@@ -81,18 +81,40 @@ For testing in-app purchases on iOS:
 Import the plugin in your TypeScript file:
 
 ```typescript
-import { NativePurchases } from '@capgo/native-purchases';
+import { NativePurchases, PURCHASE_TYPE } from '@capgo/native-purchases';
 ```
+
+### ⚠️ Important: In-App vs Subscription Purchases
+
+There are two types of purchases with different requirements:
+
+| Purchase Type | productType | planIdentifier | Use Case |
+|---------------|-------------|----------------|----------|
+| **In-App Purchase** | `PURCHASE_TYPE.INAPP` | ❌ Not needed | One-time purchases (premium features, remove ads, etc.) |
+| **Subscription** | `PURCHASE_TYPE.SUBS` | ✅ **REQUIRED** | Recurring purchases (monthly/yearly subscriptions) |
+
+**Key Rules:**
+- ✅ **In-App Products**: Use `productType: PURCHASE_TYPE.INAPP`, no `planIdentifier` needed
+- ✅ **Subscriptions**: Must use `productType: PURCHASE_TYPE.SUBS` AND `planIdentifier: "your-plan-id"`
+- ❌ **Missing planIdentifier** for subscriptions will cause purchase failures
 
 ### Complete Example: Get Product Info and Purchase
 
-Here's a complete example showing how to get product information and make a purchase:
+Here's a complete example showing how to get product information and make purchases for both in-app products and subscriptions:
 
 ```typescript
-import { NativePurchases } from '@capgo/native-purchases';
+import { NativePurchases, PURCHASE_TYPE } from '@capgo/native-purchases';
 
 class PurchaseManager {
-  private productId = 'com.yourapp.premium.monthly';
+  // In-app product (one-time purchase)
+  private premiumProductId = 'com.yourapp.premium_features';
+  
+  // Subscription products (require planIdentifier)
+  private monthlySubId = 'com.yourapp.premium.monthly';
+  private monthlyPlanId = 'monthly-plan';  // Base plan ID from store
+  
+  private yearlySubId = 'com.yourapp.premium.yearly';
+  private yearlyPlanId = 'yearly-plan';    // Base plan ID from store
 
   async initializeStore() {
     try {
@@ -103,72 +125,130 @@ class PurchaseManager {
       }
 
       // 2. Get product information (REQUIRED by Apple - no hardcoded prices!)
-      const product = await this.getProductInfo();
-      
-      // 3. Display product with dynamic info from store
-      this.displayProduct(product);
+      await this.loadProducts();
       
     } catch (error) {
       console.error('Store initialization failed:', error);
     }
   }
 
-  async getProductInfo() {
+  async loadProducts() {
     try {
-      const { product } = await NativePurchases.getProduct({
-        productIdentifier: this.productId
+      // Load in-app products
+      const { product: premiumProduct } = await NativePurchases.getProduct({
+        productIdentifier: this.premiumProductId,
+        productType: PURCHASE_TYPE.INAPP
       });
       
-      console.log('Product loaded:', {
-        id: product.identifier,
-        title: product.title,           // Use this for display (required by Apple)
-        price: product.priceString,     // Use this for display (required by Apple) 
-        description: product.description
+      // Load subscription products  
+      const { products: subscriptions } = await NativePurchases.getProducts({
+        productIdentifiers: [this.monthlySubId, this.yearlySubId],
+        productType: PURCHASE_TYPE.SUBS
       });
       
-      return product;
+      console.log('Products loaded:', {
+        premium: premiumProduct,
+        subscriptions: subscriptions
+      });
+      
+      // Display products with dynamic info from store
+      this.displayProducts(premiumProduct, subscriptions);
+      
     } catch (error) {
-      console.error('Failed to get product:', error);
+      console.error('Failed to load products:', error);
       throw error;
     }
   }
 
-  displayProduct(product: any) {
+  displayProducts(premiumProduct: any, subscriptions: any[]) {
     // ✅ CORRECT: Use dynamic product info (required by Apple)
-    document.getElementById('product-title')!.textContent = product.title;
-    document.getElementById('product-price')!.textContent = product.priceString;
-    document.getElementById('product-description')!.textContent = product.description;
+    
+    // Display one-time purchase
+    document.getElementById('premium-title')!.textContent = premiumProduct.title;
+    document.getElementById('premium-price')!.textContent = premiumProduct.priceString;
+    
+    // Display subscriptions
+    subscriptions.forEach(sub => {
+      const element = document.getElementById(`sub-${sub.identifier}`);
+      if (element) {
+        element.textContent = `${sub.title} - ${sub.priceString}`;
+      }
+    });
     
     // ❌ WRONG: Never hardcode prices - Apple will reject your app
-    // document.getElementById('product-price')!.textContent = '$9.99/month';
+    // document.getElementById('premium-price')!.textContent = '$9.99';
   }
 
-  async purchaseProduct() {
+  // Purchase one-time product (no planIdentifier needed)
+  async purchaseInAppProduct() {
     try {
-      console.log('Starting purchase...');
+      console.log('Starting in-app purchase...');
       
       const result = await NativePurchases.purchaseProduct({
-        productIdentifier: this.productId,
+        productIdentifier: this.premiumProductId,
+        productType: PURCHASE_TYPE.INAPP,
         quantity: 1
       });
       
-      console.log('Purchase successful!', result.transactionId);
-      
-      // Handle successful purchase
-      await this.handleSuccessfulPurchase(result.transactionId);
+      console.log('In-app purchase successful!', result.transactionId);
+      await this.handleSuccessfulPurchase(result.transactionId, 'premium');
       
     } catch (error) {
-      console.error('Purchase failed:', error);
+      console.error('In-app purchase failed:', error);
       this.handlePurchaseError(error);
     }
   }
 
-  async handleSuccessfulPurchase(transactionId: string) {
+  // Purchase subscription (planIdentifier REQUIRED)
+  async purchaseMonthlySubscription() {
+    try {
+      console.log('Starting subscription purchase...');
+      
+      const result = await NativePurchases.purchaseProduct({
+        productIdentifier: this.monthlySubId,
+        planIdentifier: this.monthlyPlanId,    // REQUIRED for subscriptions
+        productType: PURCHASE_TYPE.SUBS,       // REQUIRED for subscriptions
+        quantity: 1
+      });
+      
+      console.log('Subscription purchase successful!', result.transactionId);
+      await this.handleSuccessfulPurchase(result.transactionId, 'monthly');
+      
+    } catch (error) {
+      console.error('Subscription purchase failed:', error);
+      this.handlePurchaseError(error);
+    }
+  }
+
+  // Purchase yearly subscription (planIdentifier REQUIRED)
+  async purchaseYearlySubscription() {
+    try {
+      console.log('Starting yearly subscription purchase...');
+      
+      const result = await NativePurchases.purchaseProduct({
+        productIdentifier: this.yearlySubId,
+        planIdentifier: this.yearlyPlanId,     // REQUIRED for subscriptions
+        productType: PURCHASE_TYPE.SUBS,       // REQUIRED for subscriptions  
+        quantity: 1
+      });
+      
+      console.log('Yearly subscription successful!', result.transactionId);
+      await this.handleSuccessfulPurchase(result.transactionId, 'yearly');
+      
+    } catch (error) {
+      console.error('Yearly subscription failed:', error);
+      this.handlePurchaseError(error);
+    }
+  }
+
+  async handleSuccessfulPurchase(transactionId: string, purchaseType: string) {
     // 1. Grant access to premium features
     localStorage.setItem('premium_active', 'true');
+    localStorage.setItem('purchase_type', purchaseType);
     
     // 2. Update UI
-    document.getElementById('subscription-status')!.textContent = 'Premium Active';
+    const statusText = purchaseType === 'premium' ? 'Premium Unlocked' : `${purchaseType} Subscription Active`;
+    document.getElementById('subscription-status')!.textContent = statusText;
     
     // 3. Optional: Verify purchase on your server
     await this.verifyPurchaseOnServer(transactionId);
@@ -223,8 +303,16 @@ const purchaseManager = new PurchaseManager();
 purchaseManager.initializeStore();
 
 // Attach to UI buttons
-document.getElementById('buy-button')?.addEventListener('click', () => {
-  purchaseManager.purchaseProduct();
+document.getElementById('buy-premium-button')?.addEventListener('click', () => {
+  purchaseManager.purchaseInAppProduct();
+});
+
+document.getElementById('buy-monthly-button')?.addEventListener('click', () => {
+  purchaseManager.purchaseMonthlySubscription();
+});
+
+document.getElementById('buy-yearly-button')?.addEventListener('click', () => {
+  purchaseManager.purchaseYearlySubscription();
 });
 
 document.getElementById('restore-button')?.addEventListener('click', () => {
@@ -237,15 +325,18 @@ document.getElementById('restore-button')?.addEventListener('click', () => {
 #### Get Multiple Products
 
 ```typescript
-// Get multiple products at once
-const getProducts = async () => {
+import { NativePurchases, PURCHASE_TYPE } from '@capgo/native-purchases';
+
+// Get in-app products (one-time purchases)
+const getInAppProducts = async () => {
   try {
     const { products } = await NativePurchases.getProducts({
       productIdentifiers: [
-        'com.yourapp.premium.monthly',
-        'com.yourapp.premium.yearly',
-        'com.yourapp.remove_ads'
-      ]
+        'com.yourapp.premium_features',
+        'com.yourapp.remove_ads',
+        'com.yourapp.extra_content'
+      ],
+      productType: PURCHASE_TYPE.INAPP
     });
     
     products.forEach(product => {
@@ -254,7 +345,28 @@ const getProducts = async () => {
     
     return products;
   } catch (error) {
-    console.error('Error getting products:', error);
+    console.error('Error getting in-app products:', error);
+  }
+};
+
+// Get subscription products
+const getSubscriptions = async () => {
+  try {
+    const { products } = await NativePurchases.getProducts({
+      productIdentifiers: [
+        'com.yourapp.premium.monthly',
+        'com.yourapp.premium.yearly'
+      ],
+      productType: PURCHASE_TYPE.SUBS
+    });
+    
+    products.forEach(product => {
+      console.log(`${product.title}: ${product.priceString}`);
+    });
+    
+    return products;
+  } catch (error) {
+    console.error('Error getting subscriptions:', error);
   }
 };
 ```
@@ -262,8 +374,10 @@ const getProducts = async () => {
 #### Simple Purchase Flow
 
 ```typescript
-// Simple one-function purchase
-const buyPremium = async () => {
+import { NativePurchases, PURCHASE_TYPE } from '@capgo/native-purchases';
+
+// Simple one-time purchase (in-app product)
+const buyInAppProduct = async () => {
   try {
     // Check billing support
     const { isBillingSupported } = await NativePurchases.isBillingSupported();
@@ -274,16 +388,18 @@ const buyPremium = async () => {
 
     // Get product (for price display)
     const { product } = await NativePurchases.getProduct({
-      productIdentifier: 'com.yourapp.premium'
+      productIdentifier: 'com.yourapp.premium_features',
+      productType: PURCHASE_TYPE.INAPP
     });
 
     // Confirm with user (showing real price from store)
     const confirmed = confirm(`Purchase ${product.title} for ${product.priceString}?`);
     if (!confirmed) return;
 
-    // Make purchase
+    // Make purchase (no planIdentifier needed for in-app)
     const result = await NativePurchases.purchaseProduct({
-      productIdentifier: 'com.yourapp.premium',
+      productIdentifier: 'com.yourapp.premium_features',
+      productType: PURCHASE_TYPE.INAPP,
       quantity: 1
     });
 
@@ -291,6 +407,41 @@ const buyPremium = async () => {
     
   } catch (error) {
     alert('Purchase failed: ' + error.message);
+  }
+};
+
+// Simple subscription purchase (requires planIdentifier)
+const buySubscription = async () => {
+  try {
+    // Check billing support
+    const { isBillingSupported } = await NativePurchases.isBillingSupported();
+    if (!isBillingSupported) {
+      alert('Purchases not supported on this device');
+      return;
+    }
+
+    // Get subscription product (for price display)
+    const { product } = await NativePurchases.getProduct({
+      productIdentifier: 'com.yourapp.premium.monthly',
+      productType: PURCHASE_TYPE.SUBS
+    });
+
+    // Confirm with user (showing real price from store)
+    const confirmed = confirm(`Subscribe to ${product.title} for ${product.priceString}?`);
+    if (!confirmed) return;
+
+    // Make subscription purchase (planIdentifier REQUIRED)
+    const result = await NativePurchases.purchaseProduct({
+      productIdentifier: 'com.yourapp.premium.monthly',
+      planIdentifier: 'monthly-plan',           // REQUIRED for subscriptions
+      productType: PURCHASE_TYPE.SUBS,          // REQUIRED for subscriptions
+      quantity: 1
+    });
+
+    alert('Subscription successful! Transaction ID: ' + result.transactionId);
+    
+  } catch (error) {
+    alert('Subscription failed: ' + error.message);
   }
 };
 ```
@@ -366,13 +517,14 @@ import axios from 'axios'; // Make sure to install axios: npm install axios
 class Store {
   // ... (previous code remains the same)
 
+  // Purchase in-app product
   async purchaseProduct(productId: string) {
     try {
       const transaction = await NativePurchases.purchaseProduct({
         productIdentifier: productId,
         productType: PURCHASE_TYPE.INAPP
       });
-      console.log('Purchase successful:', transaction);
+      console.log('In-app purchase successful:', transaction);
       
       // Immediately grant access to the purchased content
       await this.grantAccess(productId);
@@ -383,6 +535,29 @@ class Store {
       return transaction;
     } catch (error) {
       console.error('Purchase failed:', error);
+      throw error;
+    }
+  }
+
+  // Purchase subscription (requires planIdentifier)
+  async purchaseSubscription(productId: string, planId: string) {
+    try {
+      const transaction = await NativePurchases.purchaseProduct({
+        productIdentifier: productId,
+        planIdentifier: planId,              // REQUIRED for subscriptions
+        productType: PURCHASE_TYPE.SUBS      // REQUIRED for subscriptions
+      });
+      console.log('Subscription purchase successful:', transaction);
+      
+      // Immediately grant access to the subscription content
+      await this.grantAccess(productId);
+      
+      // Initiate server-side validation asynchronously
+      this.validatePurchaseOnServer(transaction).catch(console.error);
+      
+      return transaction;
+    } catch (error) {
+      console.error('Subscription purchase failed:', error);
       throw error;
     }
   }
@@ -411,13 +586,18 @@ class Store {
   }
 }
 
-// Usage remains the same
+// Usage examples
 const store = new Store();
 await store.initialize();
 
 try {
-  await store.purchaseProduct('premium_subscription');
-  console.log('Purchase completed successfully');
+  // Purchase in-app product (one-time purchase)
+  await store.purchaseProduct('premium_features');
+  console.log('In-app purchase completed successfully');
+  
+  // Purchase subscription (requires planIdentifier)
+  await store.purchaseSubscription('premium_monthly', 'monthly-plan');
+  console.log('Subscription completed successfully');
 } catch (error) {
   console.error('Purchase failed:', error);
 }
