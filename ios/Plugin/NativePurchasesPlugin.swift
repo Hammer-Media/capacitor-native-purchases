@@ -114,16 +114,18 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func getProducts(_ call: CAPPluginCall) {
         if #available(iOS 15.0, *) {
             let productIdentifiers = call.getArray("productIdentifiers", String.self) ?? []
+            print("productIdentifiers \(productIdentifiers)")
             DispatchQueue.global().async {
                 Task {
                     do {
                         let products = try await Product.products(for: productIdentifiers)
+                        print("products \(products)")
                         let productsJson: [[String: Any]] = products.map { $0.dictionary }
                         call.resolve([
                             "products": productsJson
                         ])
                     } catch {
-                        print(error)
+                        print("error \(error)")
                         call.reject(error.localizedDescription)
                     }
                 }
@@ -137,6 +139,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc func getProduct(_ call: CAPPluginCall) {
         if #available(iOS 15.0, *) {
             let productIdentifier = call.getString("productIdentifier") ?? ""
+            print("productIdentifier \(productIdentifier)")
             if productIdentifier.isEmpty {
                 call.reject("productIdentifier is empty")
                 return
@@ -146,6 +149,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                 Task {
                     do {
                         let products = try await Product.products(for: [productIdentifier])
+                        print("products \(products)")
                         if let product = products.first {
                             let productJson = product.dictionary
                             call.resolve(["product": productJson])
