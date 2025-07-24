@@ -24,7 +24,7 @@ Complete visual testing guides for both platforms:
 | Platform | Guide | Content |
 |----------|-------|---------|
 | 🍎 **iOS** | **[iOS Testing Guide](./docs/iOS_TESTING_GUIDE.md)** | StoreKit Local Testing, Sandbox Testing, Developer Mode setup |
-| 🤖 **Android** | **[Android Testing Guide](./docs/Android_TESTING_GUIDE.md)** | Internal Testing, License Testing, Internal App Sharing |
+| 🤖 **Android** | **[Android Testing Guide](./docs/ANDROID_TESTING_GUIDE.md)** | Internal Testing, License Testing, Internal App Sharing |
 
 > 💡 **Quick Start**: Choose **StoreKit Local Testing** for iOS or **Internal Testing** for Android for the fastest development experience.
 
