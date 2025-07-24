@@ -126,7 +126,7 @@ public class NativePurchasesPlugin extends Plugin {
     Log.d(TAG, "Purchase state: " + purchase.getPurchaseState());
     Log.d(TAG, "Purchase token: " + purchase.getPurchaseToken());
     Log.d(TAG, "Is acknowledged: " + purchase.isAcknowledged());
-    
+
     if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
       Log.d(TAG, "Purchase state is PURCHASED");
       // Grant entitlement to the user, then acknowledge the purchase
@@ -145,7 +145,11 @@ public class NativePurchasesPlugin extends Plugin {
 
       JSObject ret = new JSObject();
       ret.put("transactionId", purchase.getPurchaseToken());
-      Log.d(TAG, "Resolving purchase call with transactionId: " + purchase.getPurchaseToken());
+      Log.d(
+        TAG,
+        "Resolving purchase call with transactionId: " +
+        purchase.getPurchaseToken()
+      );
       if (purchaseCall != null) {
         purchaseCall.resolve(ret);
       } else {
@@ -186,7 +190,13 @@ public class NativePurchasesPlugin extends Plugin {
         public void onAcknowledgePurchaseResponse(BillingResult billingResult) {
           // Handle the result of the acknowledge purchase
           Log.d(TAG, "onAcknowledgePurchaseResponse() called");
-          Log.d(TAG, "Acknowledge result: " + billingResult.getResponseCode() + " - " + billingResult.getDebugMessage());
+          Log.d(
+            TAG,
+            "Acknowledge result: " +
+            billingResult.getResponseCode() +
+            " - " +
+            billingResult.getDebugMessage()
+          );
           Log.i(
             NativePurchasesPlugin.TAG,
             "onAcknowledgePurchaseResponse" + billingResult
@@ -212,8 +222,17 @@ public class NativePurchasesPlugin extends Plugin {
             List<Purchase> purchases
           ) {
             Log.d(TAG, "onPurchasesUpdated() called");
-            Log.d(TAG, "Billing result: " + billingResult.getResponseCode() + " - " + billingResult.getDebugMessage());
-            Log.d(TAG, "Purchases count: " + (purchases != null ? purchases.size() : 0));
+            Log.d(
+              TAG,
+              "Billing result: " +
+              billingResult.getResponseCode() +
+              " - " +
+              billingResult.getDebugMessage()
+            );
+            Log.d(
+              TAG,
+              "Purchases count: " + (purchases != null ? purchases.size() : 0)
+            );
             Log.i(
               NativePurchasesPlugin.TAG,
               "onPurchasesUpdated" + billingResult
@@ -223,7 +242,10 @@ public class NativePurchasesPlugin extends Plugin {
                 BillingClient.BillingResponseCode.OK &&
               purchases != null
             ) {
-              Log.d(TAG, "Purchase update successful, processing first purchase");
+              Log.d(
+                TAG,
+                "Purchase update successful, processing first purchase"
+              );
               //                          for (Purchase purchase : purchases) {
               //                              handlePurchase(purchase, purchaseCall);
               //                          }
@@ -252,7 +274,13 @@ public class NativePurchasesPlugin extends Plugin {
         @Override
         public void onBillingSetupFinished(BillingResult billingResult) {
           Log.d(TAG, "onBillingSetupFinished() called");
-          Log.d(TAG, "Setup result: " + billingResult.getResponseCode() + " - " + billingResult.getDebugMessage());
+          Log.d(
+            TAG,
+            "Setup result: " +
+            billingResult.getResponseCode() +
+            " - " +
+            billingResult.getDebugMessage()
+          );
           if (
             billingResult.getResponseCode() ==
             BillingClient.BillingResponseCode.OK
@@ -278,7 +306,11 @@ public class NativePurchasesPlugin extends Plugin {
       semaphoreReady.await();
       Log.d(TAG, "Billing client setup completed");
     } catch (InterruptedException e) {
-      Log.d(TAG, "InterruptedException while waiting for billing setup: " + e.getMessage());
+      Log.d(
+        TAG,
+        "InterruptedException while waiting for billing setup: " +
+        e.getMessage()
+      );
       e.printStackTrace();
     }
   }
@@ -304,12 +336,12 @@ public class NativePurchasesPlugin extends Plugin {
     String planIdentifier = call.getString("planIdentifier");
     String productType = call.getString("productType", "inapp");
     Number quantity = call.getInt("quantity", 1);
-    
+
     Log.d(TAG, "Product identifier: " + productIdentifier);
     Log.d(TAG, "Plan identifier: " + planIdentifier);
     Log.d(TAG, "Product type: " + productType);
     Log.d(TAG, "Quantity: " + quantity);
-    
+
     // cannot use quantity, because it's done in native modal
     Log.d("CapacitorPurchases", "purchaseProduct: " + productIdentifier);
     if (productIdentifier == null || productIdentifier.isEmpty()) {
@@ -329,7 +361,10 @@ public class NativePurchasesPlugin extends Plugin {
       (planIdentifier == null || planIdentifier.isEmpty())
     ) {
       // Handle error: no planIdentifier with productType subs
-      Log.d(TAG, "Error: planIdentifier cannot be empty if productType is subs");
+      Log.d(
+        TAG,
+        "Error: planIdentifier cannot be empty if productType is subs"
+      );
       call.reject("planIdentifier cannot be empty if productType is subs");
       return;
     }
@@ -339,10 +374,12 @@ public class NativePurchasesPlugin extends Plugin {
       call.reject("quantity is less than 1");
       return;
     }
-    
-    String productId = productType.equals("inapp") ? productIdentifier : planIdentifier;
+
+    String productId = productType.equals("inapp")
+      ? productIdentifier
+      : planIdentifier;
     Log.d(TAG, "Using product ID for query: " + productId);
-    
+
     ImmutableList<QueryProductDetailsParams.Product> productList =
       ImmutableList.of(
         QueryProductDetailsParams.Product.newBuilder()
@@ -369,9 +406,15 @@ public class NativePurchasesPlugin extends Plugin {
             List<ProductDetails> productDetailsList
           ) {
             Log.d(TAG, "onProductDetailsResponse() called for purchase");
-            Log.d(TAG, "Query result: " + billingResult.getResponseCode() + " - " + billingResult.getDebugMessage());
+            Log.d(
+              TAG,
+              "Query result: " +
+              billingResult.getResponseCode() +
+              " - " +
+              billingResult.getDebugMessage()
+            );
             Log.d(TAG, "Product details count: " + productDetailsList.size());
-            
+
             if (productDetailsList.size() == 0) {
               Log.d(TAG, "No products found");
               closeBillingClient();
@@ -383,7 +426,10 @@ public class NativePurchasesPlugin extends Plugin {
               BillingFlowParams.ProductDetailsParams
             > productDetailsParamsList = new ArrayList<>();
             for (ProductDetails productDetailsItem : productDetailsList) {
-              Log.d(TAG, "Processing product: " + productDetailsItem.getProductId());
+              Log.d(
+                TAG,
+                "Processing product: " + productDetailsItem.getProductId()
+              );
               BillingFlowParams.ProductDetailsParams.Builder productDetailsParams =
                 BillingFlowParams.ProductDetailsParams.newBuilder()
                   .setProductDetails(productDetailsItem);
@@ -392,7 +438,11 @@ public class NativePurchasesPlugin extends Plugin {
                 // list the SubscriptionOfferDetails and find the one who match the planIdentifier if not found get the first one
                 ProductDetails.SubscriptionOfferDetails selectedOfferDetails =
                   null;
-                Log.d(TAG, "Available offer details count: " + productDetailsItem.getSubscriptionOfferDetails().size());
+                Log.d(
+                  TAG,
+                  "Available offer details count: " +
+                  productDetailsItem.getSubscriptionOfferDetails().size()
+                );
                 for (ProductDetails.SubscriptionOfferDetails offerDetails : productDetailsItem.getSubscriptionOfferDetails()) {
                   Log.d(TAG, "Checking offer: " + offerDetails.getBasePlanId());
                   if (offerDetails.getBasePlanId().equals(planIdentifier)) {
@@ -405,12 +455,19 @@ public class NativePurchasesPlugin extends Plugin {
                   selectedOfferDetails = productDetailsItem
                     .getSubscriptionOfferDetails()
                     .get(0);
-                  Log.d(TAG, "Using first available offer: " + selectedOfferDetails.getBasePlanId());
+                  Log.d(
+                    TAG,
+                    "Using first available offer: " +
+                    selectedOfferDetails.getBasePlanId()
+                  );
                 }
                 productDetailsParams.setOfferToken(
                   selectedOfferDetails.getOfferToken()
                 );
-                Log.d(TAG, "Set offer token: " + selectedOfferDetails.getOfferToken());
+                Log.d(
+                  TAG,
+                  "Set offer token: " + selectedOfferDetails.getOfferToken()
+                );
               }
               productDetailsParamsList.add(productDetailsParams.build());
             }
@@ -423,7 +480,13 @@ public class NativePurchasesPlugin extends Plugin {
               getActivity(),
               billingFlowParams
             );
-            Log.d(TAG, "Billing flow launch result: " + billingResult2.getResponseCode() + " - " + billingResult2.getDebugMessage());
+            Log.d(
+              TAG,
+              "Billing flow launch result: " +
+              billingResult2.getResponseCode() +
+              " - " +
+              billingResult2.getDebugMessage()
+            );
             Log.i(
               NativePurchasesPlugin.TAG,
               "onProductDetailsResponse2" + billingResult2
@@ -466,9 +529,18 @@ public class NativePurchasesPlugin extends Plugin {
     List<Purchase> purchases
   ) {
     Log.d(TAG, "handlePurchases() called");
-    Log.d(TAG, "Query purchases result: " + billingResult.getResponseCode() + " - " + billingResult.getDebugMessage());
-    Log.d(TAG, "Purchases count: " + (purchases != null ? purchases.size() : 0));
-    
+    Log.d(
+      TAG,
+      "Query purchases result: " +
+      billingResult.getResponseCode() +
+      " - " +
+      billingResult.getDebugMessage()
+    );
+    Log.d(
+      TAG,
+      "Purchases count: " + (purchases != null ? purchases.size() : 0)
+    );
+
     if (
       billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK
     ) {
@@ -498,9 +570,15 @@ public class NativePurchasesPlugin extends Plugin {
     String purchaseToken
   ) {
     Log.d(TAG, "onConsumeResponse() called");
-    Log.d(TAG, "Consume result: " + billingResult.getResponseCode() + " - " + billingResult.getDebugMessage());
+    Log.d(
+      TAG,
+      "Consume result: " +
+      billingResult.getResponseCode() +
+      " - " +
+      billingResult.getDebugMessage()
+    );
     Log.d(TAG, "Purchase token: " + purchaseToken);
-    
+
     if (
       billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK
     ) {
@@ -542,11 +620,20 @@ public class NativePurchasesPlugin extends Plugin {
     for (String id : productIdentifiers) {
       Log.d(TAG, "Product ID: " + id);
     }
-    
+
     List<QueryProductDetailsParams.Product> productList = new ArrayList<>();
     for (String productIdentifier : productIdentifiers) {
-      String productTypeForQuery = productType.equals("inapp") ? BillingClient.ProductType.INAPP : BillingClient.ProductType.SUBS;
-      Log.d(TAG, "Creating query product: ID='" + productIdentifier + "', Type='" + productTypeForQuery + "'");
+      String productTypeForQuery = productType.equals("inapp")
+        ? BillingClient.ProductType.INAPP
+        : BillingClient.ProductType.SUBS;
+      Log.d(
+        TAG,
+        "Creating query product: ID='" +
+        productIdentifier +
+        "', Type='" +
+        productTypeForQuery +
+        "'"
+      );
       productList.add(
         QueryProductDetailsParams.Product.newBuilder()
           .setProductId(productIdentifier)
@@ -570,15 +657,24 @@ public class NativePurchasesPlugin extends Plugin {
             List<ProductDetails> productDetailsList
           ) {
             Log.d(TAG, "onProductDetailsResponse() called for query");
-            Log.d(TAG, "Query result: " + billingResult.getResponseCode() + " - " + billingResult.getDebugMessage());
+            Log.d(
+              TAG,
+              "Query result: " +
+              billingResult.getResponseCode() +
+              " - " +
+              billingResult.getDebugMessage()
+            );
             Log.d(TAG, "Product details count: " + productDetailsList.size());
-            
+
             if (productDetailsList.size() == 0) {
               Log.d(TAG, "No products found in query");
               Log.d(TAG, "This usually means:");
               Log.d(TAG, "1. Product doesn't exist in Google Play Console");
               Log.d(TAG, "2. Product is not published/active");
-              Log.d(TAG, "3. App is not properly configured for the product type");
+              Log.d(
+                TAG,
+                "3. App is not properly configured for the product type"
+              );
               Log.d(TAG, "4. Wrong product ID or type");
               closeBillingClient();
               call.reject("Product not found");
@@ -586,19 +682,27 @@ public class NativePurchasesPlugin extends Plugin {
             }
             JSONArray products = new JSONArray();
             for (ProductDetails productDetails : productDetailsList) {
-              Log.d(TAG, "Processing product details: " + productDetails.getProductId());
+              Log.d(
+                TAG,
+                "Processing product details: " + productDetails.getProductId()
+              );
               JSObject product = new JSObject();
               product.put("title", productDetails.getName());
               product.put("description", productDetails.getDescription());
               Log.d(TAG, "Product title: " + productDetails.getName());
-              Log.d(TAG, "Product description: " + productDetails.getDescription());
-              
+              Log.d(
+                TAG,
+                "Product description: " + productDetails.getDescription()
+              );
+
               if (productType.equals("inapp")) {
                 Log.d(TAG, "Processing as in-app product");
                 product.put("identifier", productDetails.getProductId());
-                double price = productDetails
-                  .getOneTimePurchaseOfferDetails()
-                  .getPriceAmountMicros() / 1000000.0;
+                double price =
+                  productDetails
+                    .getOneTimePurchaseOfferDetails()
+                    .getPriceAmountMicros() /
+                  1000000.0;
                 product.put("price", price);
                 product.put(
                   "priceString",
@@ -613,19 +717,33 @@ public class NativePurchasesPlugin extends Plugin {
                     .getPriceCurrencyCode()
                 );
                 Log.d(TAG, "Price: " + price);
-                Log.d(TAG, "Formatted price: " + productDetails.getOneTimePurchaseOfferDetails().getFormattedPrice());
-                Log.d(TAG, "Currency: " + productDetails.getOneTimePurchaseOfferDetails().getPriceCurrencyCode());
+                Log.d(
+                  TAG,
+                  "Formatted price: " +
+                  productDetails
+                    .getOneTimePurchaseOfferDetails()
+                    .getFormattedPrice()
+                );
+                Log.d(
+                  TAG,
+                  "Currency: " +
+                  productDetails
+                    .getOneTimePurchaseOfferDetails()
+                    .getPriceCurrencyCode()
+                );
               } else {
                 Log.d(TAG, "Processing as subscription product");
                 ProductDetails.SubscriptionOfferDetails selectedOfferDetails =
                   productDetails.getSubscriptionOfferDetails().get(0);
                 product.put("planIdentifier", productDetails.getProductId());
                 product.put("identifier", selectedOfferDetails.getBasePlanId());
-                double price = selectedOfferDetails
-                  .getPricingPhases()
-                  .getPricingPhaseList()
-                  .get(0)
-                  .getPriceAmountMicros() / 1000000.0;
+                double price =
+                  selectedOfferDetails
+                    .getPricingPhases()
+                    .getPricingPhaseList()
+                    .get(0)
+                    .getPriceAmountMicros() /
+                  1000000.0;
                 product.put("price", price);
                 product.put(
                   "priceString",
@@ -644,10 +762,29 @@ public class NativePurchasesPlugin extends Plugin {
                     .getPriceCurrencyCode()
                 );
                 Log.d(TAG, "Plan identifier: " + productDetails.getProductId());
-                Log.d(TAG, "Base plan ID: " + selectedOfferDetails.getBasePlanId());
+                Log.d(
+                  TAG,
+                  "Base plan ID: " + selectedOfferDetails.getBasePlanId()
+                );
                 Log.d(TAG, "Price: " + price);
-                Log.d(TAG, "Formatted price: " + selectedOfferDetails.getPricingPhases().getPricingPhaseList().get(0).getFormattedPrice());
-                Log.d(TAG, "Currency: " + selectedOfferDetails.getPricingPhases().getPricingPhaseList().get(0).getPriceCurrencyCode());
+                Log.d(
+                  TAG,
+                  "Formatted price: " +
+                  selectedOfferDetails
+                    .getPricingPhases()
+                    .getPricingPhaseList()
+                    .get(0)
+                    .getFormattedPrice()
+                );
+                Log.d(
+                  TAG,
+                  "Currency: " +
+                  selectedOfferDetails
+                    .getPricingPhases()
+                    .getPricingPhaseList()
+                    .get(0)
+                    .getPriceCurrencyCode()
+                );
               }
               product.put("isFamilyShareable", false);
               products.put(product);
@@ -674,8 +811,14 @@ public class NativePurchasesPlugin extends Plugin {
     String productType = call.getString("productType", "inapp");
     Log.d(TAG, "Product type: " + productType);
     Log.d(TAG, "Raw productIdentifiersArray: " + productIdentifiersArray);
-    Log.d(TAG, "productIdentifiersArray length: " + (productIdentifiersArray != null ? productIdentifiersArray.length() : "null"));
-    
+    Log.d(
+      TAG,
+      "productIdentifiersArray length: " +
+      (productIdentifiersArray != null
+          ? productIdentifiersArray.length()
+          : "null")
+    );
+
     if (
       productIdentifiersArray == null || productIdentifiersArray.length() == 0
     ) {
@@ -683,7 +826,7 @@ public class NativePurchasesPlugin extends Plugin {
       call.reject("productIdentifiers array missing");
       return;
     }
-    
+
     List<String> productIdentifiers = new ArrayList<>();
     for (int i = 0; i < productIdentifiersArray.length(); i++) {
       String productId = productIdentifiersArray.optString(i, "");
@@ -691,7 +834,10 @@ public class NativePurchasesPlugin extends Plugin {
       productIdentifiers.add(productId);
       Log.d(TAG, "Added product identifier: " + productId);
     }
-    Log.d(TAG, "Final productIdentifiers list: " + productIdentifiers.toString());
+    Log.d(
+      TAG,
+      "Final productIdentifiers list: " + productIdentifiers.toString()
+    );
     queryProductDetails(productIdentifiers, productType, call);
   }
 
@@ -702,7 +848,7 @@ public class NativePurchasesPlugin extends Plugin {
     String productType = call.getString("productType", "inapp");
     Log.d(TAG, "Product identifier: " + productIdentifier);
     Log.d(TAG, "Product type: " + productType);
-    
+
     if (productIdentifier.isEmpty()) {
       Log.d(TAG, "Error: productIdentifier is empty");
       call.reject("productIdentifier is empty");

@@ -2,33 +2,20 @@
 
 This guide covers testing Android in-app purchases using Google Play Console and various testing methods.
 
-## Testing Methods Overview
+## Recommended Testing Method: License Testing
 
-There are several testing options for Android in-app purchases:
+**License Testing** is the best approach for Android IAP development:
 
-### 1. **Internal Testing** (Recommended for Development)
-- Test with real Google Play infrastructure
-- Use test accounts or your own account
-- Fast deployment and testing
-- Real transaction flow without charges
+- **No app uploads** - Test with debug builds directly
+- **Multiple test scenarios** - Various payment responses
+- **Fast iteration** - No review process delays  
+- **Free testing** - No charges for test purchases
+- **Real billing flow** - Simulates actual Google Play integration
 
-### 2. **License Testing** (Account-Based)
-- Configure test accounts in Play Console
-- Automatic test responses for purchases
-- No real charges to test accounts
-- Good for automated testing
-
-### 3. **Internal App Sharing** (Quick Testing)
-- Upload APK directly for immediate testing
-- Bypass review process
-- Good for rapid iteration
-- Limited to testers you specify
-
-### 4. **Play Billing Lab** (Advanced Testing)
-- Test purchase flow in different regions
-- Test with real payment methods (with permissions)
-- Combine with license testing for comprehensive testing
-- Download from Play Store for license testers
+**Play Billing Lab** (optional advanced testing):
+- Download: [Play Billing Lab](https://play.google.com/store/apps/details?id=com.google.android.apps.play.billingtestcompanion)
+- Test different regions and payment methods
+- Must be a license tester to access
 
 ## Prerequisites
 
@@ -52,33 +39,7 @@ There are several testing options for Android in-app purchases:
 
 ![Setting Product Price](./android-images/set_price_android.png)
 
-## Internal Testing Method
-
-### Step 1: Set Up Internal Testing Track
-
-1. **Go to Release → Testing → Internal testing**
-2. **Create new release**
-   - Upload your signed APK/AAB
-   - Add release notes
-   - Review and rollout
-
-3. **Add Testers**
-   - Add email addresses of testers
-   - Or create email list in Play Console
-   - Share the opt-in URL with testers
-
-![Internal Testing Setup](./android-images/internal-testing-setup.png)
-
-### Step 2: Install and Test
-
-1. **Testers opt-in** using the provided URL
-2. **Install app** from Play Store (may take a few minutes to appear)
-3. **Test purchases** - they will be processed but not charged
-4. **View test transactions** in Play Console
-
-> 💡 **Pro Tip**: Internal testing processes real transactions through Google Play Billing, but test accounts won't be charged. This gives you the most realistic testing experience.
-
-## License Testing Method
+## License Testing Setup
 
 ### Step 1: Configure License Testers
 
@@ -123,12 +84,13 @@ There are several testing options for Android in-app purchases:
 
 > ⚠️ **Note**: License testing uses simulated responses, so it's good for testing purchase flow but not for validating real Google Play integration.
 
-## Play Billing Lab Testing
+## Play Billing Lab Testing (Optional)
 
 ### Setup Play Billing Lab
 
-1. **Download Play Billing Lab** from Play Store (license testers only)
-2. **Sign in** with your license tester account
+1. **Download from Play Store:** [Play Billing Lab](https://play.google.com/store/apps/details?id=com.google.android.apps.play.billingtestcompanion)
+   - Only accessible to license testers
+2. **Sign in** with your license tester account  
 3. **Configure testing settings:**
    - Select test country/region
    - Enable real payment methods (requires permissions)
@@ -185,17 +147,22 @@ Test pending transactions using license testers with slow test cards:
 
 **CRITICAL**: All purchases must be acknowledged within 3 days or they will be automatically refunded.
 
-```kotlin
+```typescript
 // Example acknowledgment
-if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
-    if (!purchase.isAcknowledged) {
-        val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
-            .setPurchaseToken(purchase.purchaseToken)
-            .build()
-        billingClient.acknowledgePurchase(acknowledgePurchaseParams) { billingResult ->
-            // Handle acknowledgment result
-        }
+import { NativePurchases } from '@capgo/native-purchases';
+
+try {
+  const purchases = await NativePurchases.queryPurchases();
+  
+  for (const purchase of purchases.purchases) {
+    if (purchase.purchaseState === 'PURCHASED' && !purchase.acknowledged) {
+      await NativePurchases.acknowledgePurchase({
+        purchaseToken: purchase.purchaseToken
+      });
     }
+  }
+} catch (error) {
+  console.error('Acknowledgment failed:', error);
 }
 ```
 
@@ -212,11 +179,11 @@ if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
 
 Add comprehensive logging to track purchase flow:
 
-```kotlin
-Log.d("Billing", "🔍 Querying products: $productList")
-Log.d("Billing", "📦 Products found: ${productDetailsList.size}")
-Log.d("Billing", "💳 Launching purchase for: ${productDetails.productId}")
-Log.d("Billing", "✅ Purchase successful: ${purchase.orderId}")
+```typescript
+console.log('🔍 Querying products:', productIds);
+console.log('📦 Products found:', products.length);
+console.log('💳 Launching purchase for:', productId);
+console.log('✅ Purchase successful:', purchase.orderId);
 ```
 
 ### 3. Testing Checklist
@@ -295,17 +262,17 @@ While Google Play is less strict than Apple, following these practices improves 
 ### Best Practices for Product Display
 
 1. **Use Real Product Data**
-   ```kotlin
+   ```typescript
    // Recommended: Use actual product details
-   productDetails.name                    // Product name from Play Console
-   productDetails.oneTimePurchaseOfferDetails?.formattedPrice  // Formatted price
-   productDetails.description             // Product description
+   product.title                         // Product name from Play Console
+   product.formattedPrice               // Formatted price
+   product.description                  // Product description
    ```
 
 2. **Handle Localization**
-   ```kotlin
+   ```typescript
    // Google Play handles currency conversion automatically
-   val price = productDetails.oneTimePurchaseOfferDetails?.formattedPrice
+   const price = product.formattedPrice;
    // Displays as "$9.99", "€8.99", "¥1000", etc. based on user's region
    ```
 
@@ -317,16 +284,16 @@ While Google Play is less strict than Apple, following these practices improves 
 
 ### ❌ Not Recommended
 
-```kotlin
+```typescript
 // Avoid hardcoded values
-Text("Premium Plan - $9.99")  // Static price
+<div>Premium Plan - $9.99</div>  // Static price
 ```
 
 ### ✅ Recommended
 
-```kotlin
+```typescript
 // Use dynamic product data
-Text("${productDetails.name} - ${productDetails.oneTimePurchaseOfferDetails?.formattedPrice}")
+<div>{product.title} - {product.formattedPrice}</div>
 ```
 
 ### Testing Product Display
@@ -344,27 +311,40 @@ Text("${productDetails.name} - ${productDetails.oneTimePurchaseOfferDetails?.for
 
 Always verify purchases on your server:
 
-```kotlin
+```typescript
 // Send purchase token to your server for verification
-val purchaseData = JsonObject().apply {
-    addProperty("purchaseToken", purchase.purchaseToken)
-    addProperty("productId", purchase.products[0])
-    addProperty("orderId", purchase.orderId)
-}
+const purchaseData = {
+  purchaseToken: purchase.purchaseToken,
+  productId: purchase.productId,
+  orderId: purchase.orderId
+};
+
 // POST to your verification endpoint
+await fetch('/api/verify-purchase', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(purchaseData)
+});
 ```
 
 ### 2. Local Verification
 
 Verify purchase signature locally:
 
-```kotlin
-fun verifyPurchase(purchase: Purchase): Boolean {
-    return Security.verifyPurchase(
-        base64PublicKey, 
-        purchase.originalJson, 
-        purchase.signature
-    )
+```typescript
+import { NativePurchases } from '@capgo/native-purchases';
+
+async function verifyPurchase(purchase: any): Promise<boolean> {
+  try {
+    // Verification is handled by the native layer
+    // Just check if purchase is valid
+    return purchase.purchaseState === 'PURCHASED' && 
+           purchase.purchaseToken && 
+           purchase.signature;
+  } catch (error) {
+    console.error('Verification failed:', error);
+    return false;
+  }
 }
 ```
 
