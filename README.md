@@ -47,7 +47,7 @@ Add the "In-App Purchase" capability to your Xcode project:
 4. Click the "+" button to add a capability
 5. Search for and add "In-App Purchase"
 
-> 📖 **[Complete Testing Guide](./docs/TESTING_GUIDE.md)** - Comprehensive guide covering both Sandbox and StoreKit local testing methods with step-by-step instructions, troubleshooting, and best practices.
+> 📖 **[Complete Testing Guide](./docs/TESTING_GUIDE_IOS.md)** - Comprehensive guide covering both Sandbox and StoreKit local testing methods with step-by-step instructions, troubleshooting, and best practices.
 
 ### Testing with Sandbox
 

@@ -215,10 +215,11 @@ for status in statuses {
 
 ### Products Not Found
 
-1. **Verify Bundle ID**: Must match exactly in App Store Connect
-2. **Check Product Status**: Products must be approved in App Store Connect
-3. **Region Availability**: Ensure products are available in test region
-4. **Sandbox Account**: Verify you're signed in with correct sandbox account
+1. **Developer Mode**: Ensure Developer Mode is enabled on your iOS device
+2. **Verify Bundle ID**: Must match exactly in App Store Connect
+3. **Check Product Status**: Products must be approved in App Store Connect
+4. **Region Availability**: Ensure products are available in test region
+5. **Sandbox Account**: Verify you're signed in with correct sandbox account
 
 ### Debug Logging
 
