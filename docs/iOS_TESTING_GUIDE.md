@@ -2,6 +2,8 @@
 
 This guide covers testing iOS in-app purchases and subscriptions using both Sandbox and StoreKit local testing methods.
 
+> ⚠️ **CRITICAL**: Apple requires product information (names, prices) to be fetched from StoreKit, not hardcoded. See [Apple's Product Display Requirements](#apples-product-display-requirements) section.
+
 ## Testing Methods Overview
 
 There are two primary testing options for iOS in-app purchases:
@@ -30,13 +32,13 @@ There are two primary testing options for iOS in-app purchases:
 3. Specify a name (e.g., `Products.storekit`)
 4. Save the file
 
-![Creating StoreKit Configuration File](./images/create-storekit-file.png)
+![Creating StoreKit Configuration File](./ios-images/create-storekit-file.png)
 
 ### Step 2: Sync with App Store Connect (Optional)
 
 You can sync the configuration file with your App Store Connect app definition to automatically import your products, or manually add them as described below.
 
-![Sync with App Store Connect](./images/sync-app-store-connect.png)
+![Sync with App Store Connect](./ios-images/sync-app-store-connect.png)
 
 ### Step 3: Add Products to Configuration
 
@@ -47,7 +49,7 @@ You can sync the configuration file with your App Store Connect app definition t
    - **Consumable purchases**
    - **Non-consumable purchases**
 
-![Adding Products to Configuration](./images/add-products-storekit.png)
+![Adding Products to Configuration](./ios-images/add-products-storekit.png)
 
 #### For Subscriptions:
 
@@ -63,7 +65,7 @@ You can sync the configuration file with your App Store Connect app definition t
    - **Promotional offers**: Optional upgrade/downgrade offers
    - **Localization**: Title and description for different regions
 
-![Subscription Configuration](./images/subscription-setup.png)
+![Subscription Configuration](./ios-images/subscription-setup.png)
 
 ### Step 4: Enable Local Testing
 
@@ -72,7 +74,7 @@ You can sync the configuration file with your App Store Connect app definition t
 3. Under **StoreKit Configuration**, select your `.storekit` file
 4. To disable testing, select "none"
 
-![Edit Scheme Options](./images/edit-scheme-storekit.png)
+![Edit Scheme Options](./ios-images/edit-scheme-storekit.png)
 
 ## Testing Scenarios
 
@@ -93,13 +95,13 @@ Starting with Xcode 12, you can manage test purchases:
 4. Delete transactions to re-test them
 5. Simulate refunds by right-clicking transactions
 
-![StoreKit Transaction Manager](./images/transaction-manager.png)
+![StoreKit Transaction Manager](./ios-images/transaction-manager.png)
 
 ### Advanced Testing Settings
 
 Access the **Editor** menu in your StoreKit configuration file for advanced options:
 
-![Editor Menu Options](./images/editor-menu-options.png)
+![Editor Menu Options](./ios-images/editor-menu-options.png)
 
 #### 1. **Default Storefront**
 - Switch between countries and currencies
@@ -144,9 +146,9 @@ Access the **Editor** menu in your StoreKit configuration file for advanced opti
 6. In transaction history window, find "pending approval" transaction
 7. Click approve button to complete the transaction
 
-![Ask to Buy Flow](./images/ask-to-buy-flow.png)
+![Ask to Buy Flow](./ios-images/ask-to-buy-flow.png)
 
-![Pending Approval Transaction](./images/pending-approval.png)
+![Pending Approval Transaction](./ios-images/pending-approval.png)
 
 ## Managing Subscriptions and Refunds
 
@@ -181,12 +183,12 @@ for status in statuses {
 
 1. Go to **App Store Connect**
 2. Navigate to **Users and Access → Sandbox Testers**
-![Sandbox Tester List](./images/sandbox-tester-setup.png)
+![Sandbox Tester List](./ios-images/sandbox-tester-setup.png)
 3. Create a new sandbox tester account with unique email
 4. Set country/region and password
 
 
-![New Tester Creation Form](./images/sandbox-tester-setup_2.png)
+![New Tester Creation Form](./ios-images/sandbox-tester-setup_2.png)
 
 ### Step 3: Configure Device for Sandbox Testing
 
@@ -196,7 +198,7 @@ for status in statuses {
 3. Install and run your app
 4. When prompted for Apple ID during purchase, use sandbox credentials
 
-![iOS Device Sandbox Setup](./images/septup_sandbox_ios.jpg)
+![iOS Device Sandbox Setup](./ios-images/septup_sandbox_ios.jpg)
 
 **Method 2: Through Developer Menu (Recommended)**
 1. With **Developer Mode enabled**, go to **Settings → Developer** 
@@ -221,16 +223,30 @@ for status in statuses {
 4. **Region Availability**: Ensure products are available in test region
 5. **Sandbox Account**: Verify you're signed in with correct sandbox account
 
+### App Store Review Issues
+
+1. **"Hardcoded product information detected"**
+   - **Problem**: Using static text for product names/prices
+   - **Solution**: Always use `product.title`, `product.priceString`, `product.description` from the plugin
+
+2. **"Price format incorrect for region"**
+   - **Problem**: Manual price formatting
+   - **Solution**: The plugin handles all currency formatting automatically
+
+3. **"Product information doesn't match App Store Connect"**
+   - **Problem**: Displaying different text than configured in App Store Connect
+   - **Solution**: Use exact plugin product properties without modification
+
 ### Debug Logging
 
 Add detailed logging to track issues:
 
-```swift
-print("🔍 Requesting product: \(productIdentifier)")
-print("📦 Products returned: \(products.count)")
-for product in products {
-    print("✅ Found product: \(product.id) - \(product.displayName)")
-}
+```javascript
+console.log('🔍 Requesting product:', productIdentifier);
+console.log('📦 Products returned:', products.length);
+products.forEach(product => {
+    console.log(`✅ Found product: ${product.identifier} - ${product.title}`);
+});
 ```
 
 ### StoreKit Configuration Issues
@@ -238,6 +254,137 @@ for product in products {
 1. **File Not Selected**: Ensure `.storekit` file is selected in scheme options
 2. **Product ID Mismatch**: Verify product IDs match between code and configuration
 3. **Missing Localization**: Add at least one localization for each product
+
+## Apple's Product Display Requirements
+
+### ⚠️ Critical App Store Guideline
+
+**Apple REQUIRES that all product information (names, prices, descriptions) be displayed using data from the plugin (which fetches from StoreKit), NOT hardcoded in your app.**
+
+### Why This Matters
+
+1. **App Store Review Compliance**
+   - Hardcoded prices will cause App Store rejection
+   - Apple reviewers specifically check for this violation
+   - Your app must pass review to reach users
+
+2. **International Markets**
+   - Prices automatically convert to local currencies
+   - Product names can be localized per region
+   - Compliance with local pricing regulations
+
+3. **Price Changes**
+   - Apple may adjust prices due to currency fluctuations
+   - Promotional pricing changes automatically
+   - Tax changes are handled automatically
+
+### ❌ WRONG - Hardcoded Display
+
+```javascript
+// This will be REJECTED by App Store Review
+function renderProduct() {
+  return `
+    <div class="product">
+      <h3>Premium Subscription</h3>  <!-- Hardcoded name -->
+      <p class="price">$9.99/month</p>  <!-- Hardcoded price -->
+      <button onclick="purchaseProduct()">Subscribe</button>
+    </div>
+  `;
+}
+```
+
+### ✅ CORRECT - Dynamic Display
+
+```javascript
+// This will PASS App Store Review
+import { NativePurchases } from '@capgo/native-purchases';
+
+async function renderProduct() {
+  try {
+    // Get product info from store
+    const { product } = await NativePurchases.getProduct({
+      productIdentifier: 'com.yourapp.premium.monthly'
+    });
+    
+    return `
+      <div class="product">
+        <h3>${product.title}</h3>           <!-- From StoreKit -->
+        <p class="price">${product.priceString}</p>  <!-- From StoreKit -->
+        <p class="description">${product.description}</p>
+        <button onclick="purchaseProduct('${product.identifier}')">Subscribe</button>
+      </div>
+    `;
+  } catch (error) {
+    console.error('Failed to load product:', error);
+    return '<p>Product unavailable</p>';
+  }
+}
+```
+
+### Required Implementation Steps
+
+1. **Always Query Plugin First**
+   ```javascript
+   import { NativePurchases } from '@capgo/native-purchases';
+   
+   // Load products from App Store via Capacitor plugin
+   const { products } = await NativePurchases.getProducts({
+     productIdentifiers: ["your.product.id"]
+   });
+   ```
+
+2. **Use Product Properties**
+   ```javascript
+   const product = products[0];
+   
+   // Required: Use these exact properties
+   const name = product.title;           // Localized name
+   const price = product.priceString;    // Formatted price with currency
+   const description = product.description; // Product description
+   ```
+
+3. **Handle Loading States**
+   ```javascript
+   // Show loading while fetching products
+   if (products.length === 0) {
+     document.getElementById('product-list').innerHTML = 'Loading products...';
+   } else {
+     // Display actual product data
+     displayProducts(products);
+   }
+   ```
+
+### Testing Product Display
+
+During testing, verify:
+
+- [ ] **Product names** display correctly in different languages
+- [ ] **Prices** show in correct local currency format  
+- [ ] **Descriptions** appear as configured in App Store Connect
+- [ ] **Loading states** are handled gracefully
+- [ ] **No hardcoded text** appears for products
+
+### Common App Store Rejection Reasons
+
+1. **"Your app displays hardcoded prices"**
+   - Solution: Use `product.priceString` from the plugin
+
+2. **"Product information doesn't match App Store Connect"**
+   - Solution: Use `product.title` and `product.description` from the plugin
+
+3. **"Price format doesn't follow local conventions"**
+   - Solution: The plugin handles this automatically via StoreKit
+
+### Localization Benefits
+
+When you use plugin product data:
+
+- **Automatic currency conversion** (USD → EUR, JPY, etc.)
+- **Proper number formatting** (1,000.00 vs 1.000,00)
+- **Right-to-left language support**
+- **Regional tax inclusion** (prices include VAT where required)
+
+> 💡 **Pro Tip**: Test your app in different regions using StoreKit configuration files to see how prices and names appear in various markets. The plugin automatically handles all regional formatting.
 
 ## Best Practices
 
@@ -304,4 +451,4 @@ All screenshots and images are for educational purposes. Some images adapted fro
 - ✅ `sandbox-tester-setup_2.png` - New tester creation form
 - ✅ `septup_sandbox_ios.jpg` - iOS device Settings → App Store (traditional method)
 
-See `docs/images/DOWNLOAD_IMAGES.md` for technical details. 
+See `docs/ios-images/DOWNLOAD_IMAGES.md` for technical details. 

@@ -17,6 +17,17 @@ npm install @capgo/native-purchases
 npx cap sync
 ```
 
+## 📚 Testing Guides
+
+Complete visual testing guides for both platforms:
+
+| Platform | Guide | Content |
+|----------|-------|---------|
+| 🍎 **iOS** | **[iOS Testing Guide](./docs/iOS_TESTING_GUIDE.md)** | StoreKit Local Testing, Sandbox Testing, Developer Mode setup |
+| 🤖 **Android** | **[Android Testing Guide](./docs/Android_TESTING_GUIDE.md)** | Internal Testing, License Testing, Internal App Sharing |
+
+> 💡 **Quick Start**: Choose **StoreKit Local Testing** for iOS or **Internal Testing** for Android for the fastest development experience.
+
 ## Android
 
 Add this to manifest
@@ -26,6 +37,8 @@ Add this to manifest
 ```
 
 ### Testing with Google Play Console
+
+> 📖 **[Complete Android Testing Guide](./docs/Android_TESTING_GUIDE.md)** - Comprehensive guide covering Internal Testing, License Testing, and Internal App Sharing methods with step-by-step instructions, troubleshooting, and best practices.
 
 For testing in-app purchases on Android:
 
@@ -47,7 +60,9 @@ Add the "In-App Purchase" capability to your Xcode project:
 4. Click the "+" button to add a capability
 5. Search for and add "In-App Purchase"
 
-> 📖 **[Complete Testing Guide](./docs/TESTING_GUIDE_IOS.md)** - Comprehensive guide covering both Sandbox and StoreKit local testing methods with step-by-step instructions, troubleshooting, and best practices.
+> ⚠️ **App Store Requirement**: You MUST display product names and prices using data from the plugin (`product.title`, `product.priceString`). Hardcoded values will cause App Store rejection.
+
+> 📖 **[Complete iOS Testing Guide](./docs/iOS_TESTING_GUIDE.md)** - Comprehensive guide covering both Sandbox and StoreKit local testing methods with step-by-step instructions, troubleshooting, and best practices.
 
 ### Testing with Sandbox
 
@@ -67,6 +82,217 @@ Import the plugin in your TypeScript file:
 
 ```typescript
 import { NativePurchases } from '@capgo/native-purchases';
+```
+
+### Complete Example: Get Product Info and Purchase
+
+Here's a complete example showing how to get product information and make a purchase:
+
+```typescript
+import { NativePurchases } from '@capgo/native-purchases';
+
+class PurchaseManager {
+  private productId = 'com.yourapp.premium.monthly';
+
+  async initializeStore() {
+    try {
+      // 1. Check if billing is supported
+      const { isBillingSupported } = await NativePurchases.isBillingSupported();
+      if (!isBillingSupported) {
+        throw new Error('Billing not supported on this device');
+      }
+
+      // 2. Get product information (REQUIRED by Apple - no hardcoded prices!)
+      const product = await this.getProductInfo();
+      
+      // 3. Display product with dynamic info from store
+      this.displayProduct(product);
+      
+    } catch (error) {
+      console.error('Store initialization failed:', error);
+    }
+  }
+
+  async getProductInfo() {
+    try {
+      const { product } = await NativePurchases.getProduct({
+        productIdentifier: this.productId
+      });
+      
+      console.log('Product loaded:', {
+        id: product.identifier,
+        title: product.title,           // Use this for display (required by Apple)
+        price: product.priceString,     // Use this for display (required by Apple) 
+        description: product.description
+      });
+      
+      return product;
+    } catch (error) {
+      console.error('Failed to get product:', error);
+      throw error;
+    }
+  }
+
+  displayProduct(product: any) {
+    // ✅ CORRECT: Use dynamic product info (required by Apple)
+    document.getElementById('product-title')!.textContent = product.title;
+    document.getElementById('product-price')!.textContent = product.priceString;
+    document.getElementById('product-description')!.textContent = product.description;
+    
+    // ❌ WRONG: Never hardcode prices - Apple will reject your app
+    // document.getElementById('product-price')!.textContent = '$9.99/month';
+  }
+
+  async purchaseProduct() {
+    try {
+      console.log('Starting purchase...');
+      
+      const result = await NativePurchases.purchaseProduct({
+        productIdentifier: this.productId,
+        quantity: 1
+      });
+      
+      console.log('Purchase successful!', result.transactionId);
+      
+      // Handle successful purchase
+      await this.handleSuccessfulPurchase(result.transactionId);
+      
+    } catch (error) {
+      console.error('Purchase failed:', error);
+      this.handlePurchaseError(error);
+    }
+  }
+
+  async handleSuccessfulPurchase(transactionId: string) {
+    // 1. Grant access to premium features
+    localStorage.setItem('premium_active', 'true');
+    
+    // 2. Update UI
+    document.getElementById('subscription-status')!.textContent = 'Premium Active';
+    
+    // 3. Optional: Verify purchase on your server
+    await this.verifyPurchaseOnServer(transactionId);
+  }
+
+  handlePurchaseError(error: any) {
+    // Handle different error scenarios
+    if (error.message.includes('User cancelled')) {
+      console.log('User cancelled the purchase');
+    } else if (error.message.includes('Network')) {
+      alert('Network error. Please check your connection and try again.');
+    } else {
+      alert('Purchase failed. Please try again.');
+    }
+  }
+
+  async verifyPurchaseOnServer(transactionId: string) {
+    try {
+      // Send transaction to your server for verification
+      const response = await fetch('/api/verify-purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transactionId })
+      });
+      
+      const result = await response.json();
+      console.log('Server verification:', result);
+    } catch (error) {
+      console.error('Server verification failed:', error);
+    }
+  }
+
+  async restorePurchases() {
+    try {
+      await NativePurchases.restorePurchases();
+      console.log('Purchases restored successfully');
+      
+      // Check if user has active premium after restore
+      const product = await this.getProductInfo();
+      // Update UI based on restored purchases
+      
+    } catch (error) {
+      console.error('Failed to restore purchases:', error);
+    }
+  }
+}
+
+// Usage in your app
+const purchaseManager = new PurchaseManager();
+
+// Initialize when app starts
+purchaseManager.initializeStore();
+
+// Attach to UI buttons
+document.getElementById('buy-button')?.addEventListener('click', () => {
+  purchaseManager.purchaseProduct();
+});
+
+document.getElementById('restore-button')?.addEventListener('click', () => {
+  purchaseManager.restorePurchases();
+});
+```
+
+### Quick Examples
+
+#### Get Multiple Products
+
+```typescript
+// Get multiple products at once
+const getProducts = async () => {
+  try {
+    const { products } = await NativePurchases.getProducts({
+      productIdentifiers: [
+        'com.yourapp.premium.monthly',
+        'com.yourapp.premium.yearly',
+        'com.yourapp.remove_ads'
+      ]
+    });
+    
+    products.forEach(product => {
+      console.log(`${product.title}: ${product.priceString}`);
+    });
+    
+    return products;
+  } catch (error) {
+    console.error('Error getting products:', error);
+  }
+};
+```
+
+#### Simple Purchase Flow
+
+```typescript
+// Simple one-function purchase
+const buyPremium = async () => {
+  try {
+    // Check billing support
+    const { isBillingSupported } = await NativePurchases.isBillingSupported();
+    if (!isBillingSupported) {
+      alert('Purchases not supported on this device');
+      return;
+    }
+
+    // Get product (for price display)
+    const { product } = await NativePurchases.getProduct({
+      productIdentifier: 'com.yourapp.premium'
+    });
+
+    // Confirm with user (showing real price from store)
+    const confirmed = confirm(`Purchase ${product.title} for ${product.priceString}?`);
+    if (!confirmed) return;
+
+    // Make purchase
+    const result = await NativePurchases.purchaseProduct({
+      productIdentifier: 'com.yourapp.premium',
+      quantity: 1
+    });
+
+    alert('Purchase successful! Transaction ID: ' + result.transactionId);
+    
+  } catch (error) {
+    alert('Purchase failed: ' + error.message);
+  }
+};
 ```
 
 ### Check if billing is supported
@@ -89,155 +315,39 @@ const checkBillingSupport = async () => {
 };
 ```
 
-### Get available products
+### API Reference
 
-Retrieve information about available products:
-
-```typescript
-const getAvailableProducts = async () => {
-  try {
-    const { products } = await NativePurchases.getProducts({
-      productIdentifiers: ['product_id_1', 'product_id_2'],
-      productType: PURCHASE_TYPE.INAPP // or PURCHASE_TYPE.SUBS for subscriptions
-    });
-    console.log('Available products:', products);
-  } catch (error) {
-    console.error('Error getting products:', error);
-  }
-};
-```
-
-### Purchase a product
-
-To initiate a purchase:
+#### Core Methods
 
 ```typescript
-const purchaseProduct = async (productId: string) => {
-  try {
-    const transaction = await NativePurchases.purchaseProduct({
-      productIdentifier: productId,
-      productType: PURCHASE_TYPE.INAPP // or PURCHASE_TYPE.SUBS for subscriptions
-    });
-    console.log('Purchase successful:', transaction);
-    // Handle the successful purchase (e.g., unlock content, update UI)
-  } catch (error) {
-    console.error('Purchase failed:', error);
-  }
-};
-```
+// Check if in-app purchases are supported
+await NativePurchases.isBillingSupported();
 
-### Restore purchases
+// Get single product information
+await NativePurchases.getProduct({ productIdentifier: 'product_id' });
 
-To restore previously purchased products:
-
-```typescript
-const restorePurchases = async () => {
-  try {
-    const { customerInfo } = await NativePurchases.restorePurchases();
-    console.log('Restored purchases:', customerInfo);
-    // Update your app's state based on the restored purchases
-  } catch (error) {
-    console.error('Failed to restore purchases:', error);
-  }
-};
-```
-
-## Example: Implementing a simple store
-
-Here's a basic example of how you might implement a simple store in your app:
-
-```typescript
-import { Capacitor } from '@capacitor/core';
-import { NativePurchases, PURCHASE_TYPE, Product } from '@capgo/native-purchases';
-
-class Store {
-  private products: Product[] = [];
-
-  async initialize() {
-    if (Capacitor.isNativePlatform()) {
-      try {
-        await this.checkBillingSupport();
-        await this.loadProducts();
-      } catch (error) {
-        console.error('Store initialization failed:', error);
-      }
-    }
-  }
-
-  private async checkBillingSupport() {
-    const { isBillingSupported } = await NativePurchases.isBillingSupported();
-    if (!isBillingSupported) {
-      throw new Error('Billing is not supported on this device');
-    }
-  }
-
-  private async loadProducts() {
-    const productIds = ['premium_subscription', 'remove_ads', 'coin_pack'];
-    const { products } = await NativePurchases.getProducts({
-      productIdentifiers: productIds,
-      productType: PURCHASE_TYPE.INAPP
-    });
-    this.products = products;
-  }
-
-  getProducts() {
-    return this.products;
-  }
-
-  async purchaseProduct(productId: string) {
-    try {
-      const transaction = await NativePurchases.purchaseProduct({
-        productIdentifier: productId,
-        productType: PURCHASE_TYPE.INAPP
-      });
-      console.log('Purchase successful:', transaction);
-      // Handle the successful purchase
-      return transaction;
-    } catch (error) {
-      console.error('Purchase failed:', error);
-      throw error;
-    }
-  }
-
-  async restorePurchases() {
-    try {
-      const { customerInfo } = await NativePurchases.restorePurchases();
-      console.log('Restored purchases:', customerInfo);
-      // Update app state based on restored purchases
-      return customerInfo;
-    } catch (error) {
-      console.error('Failed to restore purchases:', error);
-      throw error;
-    }
-  }
-}
-
-// Usage
-const store = new Store();
-await store.initialize();
-
-// Display products
-const products = store.getProducts();
-console.log('Available products:', products);
+// Get multiple products
+await NativePurchases.getProducts({ productIdentifiers: ['id1', 'id2'] });
 
 // Purchase a product
-try {
-  await store.purchaseProduct('premium_subscription');
-  console.log('Purchase completed successfully');
-} catch (error) {
-  console.error('Purchase failed:', error);
-}
+await NativePurchases.purchaseProduct({ 
+  productIdentifier: 'product_id', 
+  quantity: 1 
+});
 
-// Restore purchases
-try {
-  await store.restorePurchases();
-  console.log('Purchases restored successfully');
-} catch (error) {
-  console.error('Failed to restore purchases:', error);
-}
+// Restore previous purchases
+await NativePurchases.restorePurchases();
+
+// Get plugin version
+await NativePurchases.getPluginVersion();
 ```
 
-This example provides a basic structure for initializing the store, loading products, making purchases, and restoring previous purchases. You'll need to adapt this to fit your specific app's needs, handle UI updates, and implement proper error handling and user feedback.
+### Important Notes
+
+- **Apple Requirement**: Always display product names and prices from StoreKit data, never hardcode them
+- **Error Handling**: Implement proper error handling for network issues and user cancellations  
+- **Server Verification**: Always verify purchases on your server for security
+- **Testing**: Use the comprehensive testing guides for both iOS and Android platforms
 
 ## Backend Validation
 
