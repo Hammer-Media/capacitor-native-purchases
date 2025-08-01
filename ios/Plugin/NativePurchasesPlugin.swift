@@ -42,6 +42,8 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
             print("purchaseProduct")
             let productIdentifier = call.getString("productIdentifier", "")
             let quantity = call.getInt("quantity", 1)
+            let appAccountToken = call.getString("appAccountToken")
+
             if productIdentifier.isEmpty {
                 call.reject("productIdentifier is Empty, give an id")
                 return
@@ -56,13 +58,31 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                     }
                     var purchaseOptions = Set<Product.PurchaseOption>()
                     purchaseOptions.insert(Product.PurchaseOption.quantity(quantity))
+
+                    // Add appAccountToken if provided
+                    if let accountToken = appAccountToken, !accountToken.isEmpty {
+                        if let tokenData = UUID(uuidString: accountToken) {
+                            purchaseOptions.insert(Product.PurchaseOption.appAccountToken(tokenData))
+                        }
+                    }
+
                     let result = try await product.purchase(options: purchaseOptions)
                     print("purchaseProduct result \(result)")
                     switch result {
                     case let .success(.verified(transaction)):
-                        // Successful purhcase
+                        // Successful purchase
+                        var response: [String: Any] = ["transactionId": transaction.id]
+
+                        // Get receipt data
+                        if let appStoreReceiptURL = Bundle.main.appStoreReceiptURL,
+                           FileManager.default.fileExists(atPath: appStoreReceiptURL.path),
+                           let receiptData = try? Data(contentsOf: appStoreReceiptURL) {
+                            let receiptBase64 = receiptData.base64EncodedString()
+                            response["receipt"] = receiptBase64
+                        }
+
                         await transaction.finish()
-                        call.resolve(["transactionId": transaction.id])
+                        call.resolve(response)
                     case let .success(.unverified(_, error)):
                         // Successful purchase but transaction/receipt can't be verified
                         // Could be a jailbroken phone

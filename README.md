@@ -400,10 +400,17 @@ const buyInAppProduct = async () => {
     const result = await NativePurchases.purchaseProduct({
       productIdentifier: 'com.yourapp.premium_features',
       productType: PURCHASE_TYPE.INAPP,
-      quantity: 1
+      quantity: 1,
+      appAccountToken: userUUID // Optional: iOS only - for linking purchases to user accounts
     });
 
     alert('Purchase successful! Transaction ID: ' + result.transactionId);
+    
+    // iOS will also return receipt data for validation
+    if (result.receipt) {
+      // Send to your backend for validation
+      await validateReceipt(result.receipt);
+    }
     
   } catch (error) {
     alert('Purchase failed: ' + error.message);
@@ -430,15 +437,22 @@ const buySubscription = async () => {
     const confirmed = confirm(`Subscribe to ${product.title} for ${product.priceString}?`);
     if (!confirmed) return;
 
-    // Make subscription purchase (planIdentifier REQUIRED)
+    // Make subscription purchase (planIdentifier REQUIRED for Android)
     const result = await NativePurchases.purchaseProduct({
       productIdentifier: 'com.yourapp.premium.monthly',
-      planIdentifier: 'monthly-plan',           // REQUIRED for subscriptions
+      planIdentifier: 'monthly-plan',           // REQUIRED for Android subscriptions
       productType: PURCHASE_TYPE.SUBS,          // REQUIRED for subscriptions
-      quantity: 1
+      quantity: 1,
+      appAccountToken: userUUID                 // Optional: iOS only - for linking purchases to user accounts
     });
 
     alert('Subscription successful! Transaction ID: ' + result.transactionId);
+    
+    // iOS will also return receipt data for validation
+    if (result.receipt) {
+      // Send to your backend for validation
+      await validateReceipt(result.receipt);
+    }
     
   } catch (error) {
     alert('Subscription failed: ' + error.message);
@@ -734,14 +748,14 @@ Restores a user's previous  and links their appUserIDs to any user's also using 
 ### purchaseProduct(...)
 
 ```typescript
-purchaseProduct(options: { productIdentifier: string; planIdentifier?: string; productType?: PURCHASE_TYPE; quantity?: number; }) => Promise<Transaction>
+purchaseProduct(options: { productIdentifier: string; planIdentifier?: string; productType?: PURCHASE_TYPE; quantity?: number; appAccountToken?: string; }) => Promise<Transaction>
 ```
 
 Started purchase process for the given product.
 
-| Param         | Type                                                                                                                                              | Description               |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| **`options`** | <code>{ productIdentifier: string; planIdentifier?: string; productType?: <a href="#purchase_type">PURCHASE_TYPE</a>; quantity?: number; }</code> | - The product to purchase |
+| Param         | Type                                                                                                                                                                        | Description               |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| **`options`** | <code>{ productIdentifier: string; planIdentifier?: string; productType?: <a href="#purchase_type">PURCHASE_TYPE</a>; quantity?: number; appAccountToken?: string; }</code> | - The product to purchase |
 
 **Returns:** <code>Promise&lt;<a href="#transaction">Transaction</a>&gt;</code>
 
@@ -813,9 +827,10 @@ Get the native Capacitor plugin version
 
 #### Transaction
 
-| Prop                | Type                | Description                                  |
-| ------------------- | ------------------- | -------------------------------------------- |
-| **`transactionId`** | <code>string</code> | RevenueCat Id associated to the transaction. |
+| Prop                | Type                | Description                                                     |
+| ------------------- | ------------------- | --------------------------------------------------------------- |
+| **`transactionId`** | <code>string</code> | RevenueCat Id associated to the transaction.                    |
+| **`receipt`**       | <code>string</code> | Receipt data for validation (iOS only - base64 encoded receipt) |
 
 
 #### Product

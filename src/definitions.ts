@@ -147,6 +147,10 @@ export interface Transaction {
    */
   readonly transactionId: string;
   /**
+   * Receipt data for validation (iOS only - base64 encoded receipt)
+   */
+  readonly receipt?: string;
+  /**
    * Product Id associated with the transaction.
    */
   // readonly productIdentifier: string;
@@ -269,12 +273,14 @@ export interface NativePurchasesPlugin {
    * @param options.productType - Only Android, the type of product, can be inapp or subs. Will use inapp by default.
    * @param options.planIdentifier - Only Android, the identifier of the plan you want to purchase, require for for subs.
    * @param options.quantity - Only iOS, the number of items you wish to purchase. Will use 1 by default.
+   * @param options.appAccountToken - Only iOS, UUID for the user's account. Used to link purchases to the user account for App Store Server Notifications.
    */
   purchaseProduct(options: {
     productIdentifier: string;
     planIdentifier?: string;
     productType?: PURCHASE_TYPE;
     quantity?: number;
+    appAccountToken?: string;
   }): Promise<Transaction>;
 
   /**
