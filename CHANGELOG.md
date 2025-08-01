@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [7.1.32](https://github.com/Cap-go/capacitor-native-purchases/compare/7.1.31...7.1.32) (2025-08-01)
+
 ### [7.1.31](https://github.com/Cap-go/capacitor-native-purchases/compare/7.1.30...7.1.31) (2025-07-24)
 
 ### [7.1.30](https://github.com/Cap-go/capacitor-native-purchases/compare/7.1.29...7.1.30) (2025-07-24)
