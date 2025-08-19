@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.3.2](https://github.com/Cap-go/capacitor-native-purchases/compare/7.3.1...7.3.2) (2025-08-19)
+
 ## [7.3.1](https://github.com/Cap-go/capacitor-native-purchases/compare/7.3.0...7.3.1) (2025-08-19)
 
 ## [7.3.0](https://github.com/Cap-go/capacitor-native-purchases/compare/7.2.2...7.3.0) (2025-08-19)
