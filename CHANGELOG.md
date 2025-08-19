@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.2.0](https://github.com/Cap-go/capacitor-native-purchases/compare/7.1.33...7.2.0) (2025-08-19)
+
+
+### Features
+
+* add getUserPurchases method to retrieve all user purchases (in-app and subscriptions) for both Android and iOS ([2de7eab](https://github.com/Cap-go/capacitor-native-purchases/commit/2de7eab822341010b2925e58b7ad63d7338f3a06))
+
 ## [7.1.33](https://github.com/Cap-go/capacitor-native-purchases/compare/7.1.32...7.1.33) (2025-08-11)
 
 ### [7.1.32](https://github.com/Cap-go/capacitor-native-purchases/compare/7.1.31...7.1.32) (2025-08-01)
