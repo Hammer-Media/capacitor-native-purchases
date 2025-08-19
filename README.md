@@ -726,6 +726,7 @@ This approach balances immediate user gratification with proper server-side vali
 * [`getProduct(...)`](#getproduct)
 * [`isBillingSupported()`](#isbillingsupported)
 * [`getPluginVersion()`](#getpluginversion)
+* [`getUserPurchases(...)`](#getuserpurchases)
 * [Interfaces](#interfaces)
 * [Enums](#enums)
 
@@ -818,6 +819,26 @@ getPluginVersion() => Promise<{ version: string; }>
 Get the native Capacitor plugin version
 
 **Returns:** <code>Promise&lt;{ version: string; }&gt;</code>
+
+--------------------
+
+
+### getUserPurchases(...)
+
+```typescript
+getUserPurchases(options?: { productType?: PURCHASE_TYPE | undefined; } | undefined) => Promise<{ purchases: Transaction[]; }>
+```
+
+Gets all the user's purchases (both in-app purchases and subscriptions).
+This method queries the platform's purchase history for the current user.
+
+| Param         | Type                                                                       | Description                                   |
+| ------------- | -------------------------------------------------------------------------- | --------------------------------------------- |
+| **`options`** | <code>{ productType?: <a href="#purchase_type">PURCHASE_TYPE</a>; }</code> | - Optional parameters for filtering purchases |
+
+**Returns:** <code>Promise&lt;{ purchases: Transaction[]; }&gt;</code>
+
+**Since:** 7.2.0
 
 --------------------
 
