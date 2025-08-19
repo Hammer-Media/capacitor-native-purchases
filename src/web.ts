@@ -1,6 +1,11 @@
 import { WebPlugin } from "@capacitor/core";
 
-import type { NativePurchasesPlugin, Product } from "./definitions";
+import type {
+  NativePurchasesPlugin,
+  Product,
+  PURCHASE_TYPE,
+  Transaction,
+} from "./definitions";
 
 export class NativePurchasesWeb
   extends WebPlugin
@@ -40,5 +45,11 @@ export class NativePurchasesWeb
   async getPluginVersion(): Promise<{ version: string }> {
     console.warn("Cannot get plugin version in web");
     return { version: "default" };
+  }
+  async getUserPurchases(options?: {
+    productType?: PURCHASE_TYPE;
+  }): Promise<{ purchases: Transaction[] }> {
+    console.error("getUserPurchases only mocked in web " + options);
+    return { purchases: [] };
   }
 }
