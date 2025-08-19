@@ -726,7 +726,7 @@ This approach balances immediate user gratification with proper server-side vali
 * [`getProduct(...)`](#getproduct)
 * [`isBillingSupported()`](#isbillingsupported)
 * [`getPluginVersion()`](#getpluginversion)
-* [`getPurchases(...)`](#getPurchases)
+* [`getPurchases(...)`](#getpurchases)
 * [Interfaces](#interfaces)
 * [Enums](#enums)
 
