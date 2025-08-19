@@ -322,4 +322,18 @@ export interface NativePurchasesPlugin {
    * @throws An error if the something went wrong
    */
   getPluginVersion(): Promise<{ version: string }>;
+
+  /**
+   * Gets all the user's purchases (both in-app purchases and subscriptions).
+   * This method queries the platform's purchase history for the current user.
+   *
+   * @param options - Optional parameters for filtering purchases
+   * @param options.productType - Only Android, filter by product type (inapp or subs). If not specified, returns both types.
+   * @returns {Promise<{ purchases: Transaction[] }>} Promise that resolves with array of user's purchases
+   * @throws An error if the purchase query fails
+   * @since 7.2.0
+   */
+  getUserPurchases(options?: {
+    productType?: PURCHASE_TYPE;
+  }): Promise<{ purchases: Transaction[] }>;
 }

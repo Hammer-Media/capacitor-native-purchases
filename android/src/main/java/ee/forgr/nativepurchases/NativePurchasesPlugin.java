@@ -859,4 +859,156 @@ public class NativePurchasesPlugin extends Plugin {
       call
     );
   }
+
+  @PluginMethod
+  public void getUserPurchases(PluginCall call) {
+    Log.d(TAG, "getUserPurchases() called");
+    String productType = call.getString("productType");
+    Log.d(TAG, "Product type filter: " + productType);
+
+    this.initBillingClient(null);
+
+    JSONArray allPurchases = new JSONArray();
+
+    try {
+      // Query in-app purchases if no filter or if filter is "inapp"
+      if (productType == null || productType.equals("inapp")) {
+        Log.d(TAG, "Querying in-app purchases");
+        QueryPurchasesParams queryInAppParams =
+          QueryPurchasesParams.newBuilder()
+            .setProductType(BillingClient.ProductType.INAPP)
+            .build();
+
+        billingClient.queryPurchasesAsync(
+          queryInAppParams,
+          (billingResult, purchases) -> {
+            Log.d(
+              TAG,
+              "In-app purchases query result: " +
+              billingResult.getResponseCode()
+            );
+            if (
+              billingResult.getResponseCode() ==
+                BillingClient.BillingResponseCode.OK &&
+              purchases != null
+            ) {
+              for (Purchase purchase : purchases) {
+                Log.d(
+                  TAG,
+                  "Processing in-app purchase: " + purchase.getOrderId()
+                );
+                JSObject purchaseData = new JSObject();
+                purchaseData.put("transactionId", purchase.getPurchaseToken());
+                allPurchases.put(purchaseData);
+              }
+            }
+
+            // Query subscriptions if no filter or if filter is "subs"
+            if (productType == null || productType.equals("subs")) {
+              Log.d(TAG, "Querying subscription purchases");
+              QueryPurchasesParams querySubsParams =
+                QueryPurchasesParams.newBuilder()
+                  .setProductType(BillingClient.ProductType.SUBS)
+                  .build();
+
+              billingClient.queryPurchasesAsync(
+                querySubsParams,
+                (subsResult, subsPurchases) -> {
+                  Log.d(
+                    TAG,
+                    "Subscription purchases query result: " +
+                    subsResult.getResponseCode()
+                  );
+                  if (
+                    subsResult.getResponseCode() ==
+                      BillingClient.BillingResponseCode.OK &&
+                    subsPurchases != null
+                  ) {
+                    for (Purchase purchase : subsPurchases) {
+                      Log.d(
+                        TAG,
+                        "Processing subscription purchase: " +
+                        purchase.getOrderId()
+                      );
+                      JSObject purchaseData = new JSObject();
+                      purchaseData.put(
+                        "transactionId",
+                        purchase.getPurchaseToken()
+                      );
+                      allPurchases.put(purchaseData);
+                    }
+                  }
+
+                  // Return final result
+                  JSObject result = new JSObject();
+                  result.put("purchases", allPurchases);
+                  Log.d(
+                    TAG,
+                    "Returning " + allPurchases.length() + " purchases"
+                  );
+                  closeBillingClient();
+                  call.resolve(result);
+                }
+              );
+            } else {
+              // Only querying in-app, return result now
+              JSObject result = new JSObject();
+              result.put("purchases", allPurchases);
+              Log.d(
+                TAG,
+                "Returning " + allPurchases.length() + " in-app purchases"
+              );
+              closeBillingClient();
+              call.resolve(result);
+            }
+          }
+        );
+      } else if (productType.equals("subs")) {
+        // Only query subscriptions
+        Log.d(TAG, "Querying only subscription purchases");
+        QueryPurchasesParams querySubsParams = QueryPurchasesParams.newBuilder()
+          .setProductType(BillingClient.ProductType.SUBS)
+          .build();
+
+        billingClient.queryPurchasesAsync(
+          querySubsParams,
+          (billingResult, purchases) -> {
+            Log.d(
+              TAG,
+              "Subscription purchases query result: " +
+              billingResult.getResponseCode()
+            );
+            if (
+              billingResult.getResponseCode() ==
+                BillingClient.BillingResponseCode.OK &&
+              purchases != null
+            ) {
+              for (Purchase purchase : purchases) {
+                Log.d(
+                  TAG,
+                  "Processing subscription purchase: " + purchase.getOrderId()
+                );
+                JSObject purchaseData = new JSObject();
+                purchaseData.put("transactionId", purchase.getPurchaseToken());
+                allPurchases.put(purchaseData);
+              }
+            }
+
+            JSObject result = new JSObject();
+            result.put("purchases", allPurchases);
+            Log.d(
+              TAG,
+              "Returning " + allPurchases.length() + " subscription purchases"
+            );
+            closeBillingClient();
+            call.resolve(result);
+          }
+        );
+      }
+    } catch (Exception e) {
+      Log.d(TAG, "Exception during getUserPurchases: " + e.getMessage());
+      closeBillingClient();
+      call.reject(e.getMessage());
+    }
+  }
 }

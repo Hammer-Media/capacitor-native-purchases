@@ -16,7 +16,8 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "restorePurchases", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getProducts", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getProduct", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "getPluginVersion", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "getPluginVersion", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getUserPurchases", returnType: CAPPluginReturnPromise)
     ]
 
     private let PLUGIN_VERSION = "0.0.25"
@@ -178,6 +179,73 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                         }
                     } catch {
                         print(error)
+                        call.reject(error.localizedDescription)
+                    }
+                }
+            }
+        } else {
+            print("Not implemented under iOS 15")
+            call.reject("Not implemented under iOS 15")
+        }
+    }
+
+    @objc func getUserPurchases(_ call: CAPPluginCall) {
+        if #available(iOS 15.0, *) {
+            print("getUserPurchases")
+            DispatchQueue.global().async {
+                Task {
+                    do {
+                        var allPurchases: [[String: Any]] = []
+
+                        // Get all current entitlements (active subscriptions)
+                        for await result in Transaction.currentEntitlements {
+                            if case .verified(let transaction) = result {
+                                var purchaseData: [String: Any] = ["transactionId": String(transaction.id)]
+
+                                // Get receipt data
+                                if let appStoreReceiptURL = Bundle.main.appStoreReceiptURL,
+                                   FileManager.default.fileExists(atPath: appStoreReceiptURL.path),
+                                   let receiptData = try? Data(contentsOf: appStoreReceiptURL) {
+                                    let receiptBase64 = receiptData.base64EncodedString()
+                                    purchaseData["receipt"] = receiptBase64
+                                }
+
+                                allPurchases.append(purchaseData)
+                            }
+                        }
+
+                        // Also get all transactions (including non-consumables and expired subscriptions)
+                        for await result in Transaction.all {
+                            if case .verified(let transaction) = result {
+                                let transactionIdString = String(transaction.id)
+
+                                // Check if we already have this transaction
+                                let alreadyExists = allPurchases.contains { purchase in
+                                    if let existingId = purchase["transactionId"] as? String {
+                                        return existingId == transactionIdString
+                                    }
+                                    return false
+                                }
+
+                                if !alreadyExists {
+                                    var purchaseData: [String: Any] = ["transactionId": transactionIdString]
+
+                                    // Get receipt data
+                                    if let appStoreReceiptURL = Bundle.main.appStoreReceiptURL,
+                                       FileManager.default.fileExists(atPath: appStoreReceiptURL.path),
+                                       let receiptData = try? Data(contentsOf: appStoreReceiptURL) {
+                                        let receiptBase64 = receiptData.base64EncodedString()
+                                        purchaseData["receipt"] = receiptBase64
+                                    }
+
+                                    allPurchases.append(purchaseData)
+                                }
+                            }
+                        }
+
+                        call.resolve(["purchases": allPurchases])
+                    } catch {
+                        print("getUserPurchases error: \(error)")
                         call.reject(error.localizedDescription)
                     }
                 }
