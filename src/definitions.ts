@@ -333,7 +333,7 @@ export interface NativePurchasesPlugin {
    * @throws An error if the purchase query fails
    * @since 7.2.0
    */
-  getUserPurchases(options?: {
+  getPurchases(options?: {
     productType?: PURCHASE_TYPE;
   }): Promise<{ purchases: Transaction[] }>;
 }

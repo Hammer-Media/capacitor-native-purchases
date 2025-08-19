@@ -726,7 +726,7 @@ This approach balances immediate user gratification with proper server-side vali
 * [`getProduct(...)`](#getproduct)
 * [`isBillingSupported()`](#isbillingsupported)
 * [`getPluginVersion()`](#getpluginversion)
-* [`getUserPurchases(...)`](#getuserpurchases)
+* [`getPurchases(...)`](#getPurchases)
 * [Interfaces](#interfaces)
 * [Enums](#enums)
 
@@ -823,10 +823,10 @@ Get the native Capacitor plugin version
 --------------------
 
 
-### getUserPurchases(...)
+### getPurchases(...)
 
 ```typescript
-getUserPurchases(options?: { productType?: PURCHASE_TYPE | undefined; } | undefined) => Promise<{ purchases: Transaction[]; }>
+getPurchases(options?: { productType?: PURCHASE_TYPE | undefined; } | undefined) => Promise<{ purchases: Transaction[]; }>
 ```
 
 Gets all the user's purchases (both in-app purchases and subscriptions).

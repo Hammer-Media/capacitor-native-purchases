@@ -17,7 +17,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "getProducts", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getProduct", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getPluginVersion", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "getUserPurchases", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "getPurchases", returnType: CAPPluginReturnPromise)
     ]
 
     private let PLUGIN_VERSION = "0.0.25"
@@ -189,9 +189,9 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
-    @objc func getUserPurchases(_ call: CAPPluginCall) {
+    @objc func getPurchases(_ call: CAPPluginCall) {
         if #available(iOS 15.0, *) {
-            print("getUserPurchases")
+            print("getPurchases")
             DispatchQueue.global().async {
                 Task {
                     do {
@@ -245,7 +245,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
 
                         call.resolve(["purchases": allPurchases])
                     } catch {
-                        print("getUserPurchases error: \(error)")
+                        print("getPurchases error: \(error)")
                         call.reject(error.localizedDescription)
                     }
                 }

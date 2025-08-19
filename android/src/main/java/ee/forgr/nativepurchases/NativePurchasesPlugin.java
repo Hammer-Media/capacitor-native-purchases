@@ -861,8 +861,8 @@ public class NativePurchasesPlugin extends Plugin {
   }
 
   @PluginMethod
-  public void getUserPurchases(PluginCall call) {
-    Log.d(TAG, "getUserPurchases() called");
+  public void getPurchases(PluginCall call) {
+    Log.d(TAG, "getPurchases() called");
     String productType = call.getString("productType");
     Log.d(TAG, "Product type filter: " + productType);
 
@@ -1006,7 +1006,7 @@ public class NativePurchasesPlugin extends Plugin {
         );
       }
     } catch (Exception e) {
-      Log.d(TAG, "Exception during getUserPurchases: " + e.getMessage());
+      Log.d(TAG, "Exception during getPurchases: " + e.getMessage());
       closeBillingClient();
       call.reject(e.getMessage());
     }

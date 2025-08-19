@@ -46,10 +46,10 @@ export class NativePurchasesWeb
     console.warn("Cannot get plugin version in web");
     return { version: "default" };
   }
-  async getUserPurchases(options?: {
+  async getPurchases(options?: {
     productType?: PURCHASE_TYPE;
   }): Promise<{ purchases: Transaction[] }> {
-    console.error("getUserPurchases only mocked in web " + options);
+    console.error("getPurchases only mocked in web " + options);
     return { purchases: [] };
   }
 }
