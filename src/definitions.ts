@@ -171,7 +171,7 @@ export interface Transaction {
    */
   readonly isActive?: boolean;
   /**
-   * Date when the subscription was cancelled/revoked, or null if not cancelled.
+   * Date when the subscription was cancelled/revoked, or null if not cancelled. Only available on iOS.
    */
   readonly willCancel?: string | null;
   /**
