@@ -145,6 +145,38 @@ public class NativePurchasesPlugin extends Plugin {
 
       JSObject ret = new JSObject();
       ret.put("transactionId", purchase.getPurchaseToken());
+      ret.put("productIdentifier", purchase.getProducts().get(0));
+      ret.put(
+        "purchaseDate",
+        new java.text.SimpleDateFormat(
+          "yyyy-MM-dd'T'HH:mm:ss'Z'",
+          java.util.Locale.US
+        ).format(new java.util.Date(purchase.getPurchaseTime()))
+      );
+      ret.put("quantity", purchase.getQuantity());
+      ret.put(
+        "productType",
+        purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED
+          ? "inapp"
+          : "subs"
+      );
+      ret.put("orderId", purchase.getOrderId());
+      ret.put("purchaseToken", purchase.getPurchaseToken());
+      ret.put("isAcknowledged", purchase.isAcknowledged());
+      ret.put("purchaseState", String.valueOf(purchase.getPurchaseState()));
+
+      // For subscriptions, try to get additional information
+      if (
+        purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED &&
+        purchase.getProducts().get(0).contains("sub")
+      ) {
+        // Note: Android doesn't provide direct expiration date in Purchase object
+        // This would need to be calculated based on subscription period or fetched from Google Play API
+        ret.put("productType", "subs");
+        // For subscriptions, we can't get expiration date directly from Purchase object
+        // This would require additional Google Play API calls to get subscription details
+      }
+
       Log.d(
         TAG,
         "Resolving purchase call with transactionId: " +
@@ -899,6 +931,26 @@ public class NativePurchasesPlugin extends Plugin {
                 );
                 JSObject purchaseData = new JSObject();
                 purchaseData.put("transactionId", purchase.getPurchaseToken());
+                purchaseData.put(
+                  "productIdentifier",
+                  purchase.getProducts().get(0)
+                );
+                purchaseData.put(
+                  "purchaseDate",
+                  new java.text.SimpleDateFormat(
+                    "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                    java.util.Locale.US
+                  ).format(new java.util.Date(purchase.getPurchaseTime()))
+                );
+                purchaseData.put("quantity", purchase.getQuantity());
+                purchaseData.put("productType", "inapp");
+                purchaseData.put("orderId", purchase.getOrderId());
+                purchaseData.put("purchaseToken", purchase.getPurchaseToken());
+                purchaseData.put("isAcknowledged", purchase.isAcknowledged());
+                purchaseData.put(
+                  "purchaseState",
+                  String.valueOf(purchase.getPurchaseState())
+                );
                 allPurchases.put(purchaseData);
               }
             }
@@ -934,6 +986,32 @@ public class NativePurchasesPlugin extends Plugin {
                       purchaseData.put(
                         "transactionId",
                         purchase.getPurchaseToken()
+                      );
+                      purchaseData.put(
+                        "productIdentifier",
+                        purchase.getProducts().get(0)
+                      );
+                      purchaseData.put(
+                        "purchaseDate",
+                        new java.text.SimpleDateFormat(
+                          "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                          java.util.Locale.US
+                        ).format(new java.util.Date(purchase.getPurchaseTime()))
+                      );
+                      purchaseData.put("quantity", purchase.getQuantity());
+                      purchaseData.put("productType", "subs");
+                      purchaseData.put("orderId", purchase.getOrderId());
+                      purchaseData.put(
+                        "purchaseToken",
+                        purchase.getPurchaseToken()
+                      );
+                      purchaseData.put(
+                        "isAcknowledged",
+                        purchase.isAcknowledged()
+                      );
+                      purchaseData.put(
+                        "purchaseState",
+                        String.valueOf(purchase.getPurchaseState())
                       );
                       allPurchases.put(purchaseData);
                     }
@@ -990,6 +1068,26 @@ public class NativePurchasesPlugin extends Plugin {
                 );
                 JSObject purchaseData = new JSObject();
                 purchaseData.put("transactionId", purchase.getPurchaseToken());
+                purchaseData.put(
+                  "productIdentifier",
+                  purchase.getProducts().get(0)
+                );
+                purchaseData.put(
+                  "purchaseDate",
+                  new java.text.SimpleDateFormat(
+                    "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                    java.util.Locale.US
+                  ).format(new java.util.Date(purchase.getPurchaseTime()))
+                );
+                purchaseData.put("quantity", purchase.getQuantity());
+                purchaseData.put("productType", "subs");
+                purchaseData.put("orderId", purchase.getOrderId());
+                purchaseData.put("purchaseToken", purchase.getPurchaseToken());
+                purchaseData.put("isAcknowledged", purchase.isAcknowledged());
+                purchaseData.put(
+                  "purchaseState",
+                  String.valueOf(purchase.getPurchaseState())
+                );
                 allPurchases.put(purchaseData);
               }
             }

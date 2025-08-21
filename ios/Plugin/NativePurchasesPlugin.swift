@@ -82,6 +82,29 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                             response["receipt"] = receiptBase64
                         }
 
+                        // Add detailed transaction information
+                        response["productIdentifier"] = transaction.productID
+                        response["purchaseDate"] = ISO8601DateFormatter().string(from: transaction.purchaseDate)
+                        response["productType"] = transaction.productType == .autoRenewable ? "subs" : "inapp"
+                        
+                        // Add subscription-specific information
+                        if transaction.productType == .autoRenewable {
+                            response["originalPurchaseDate"] = ISO8601DateFormatter().string(from: transaction.originalPurchaseDate)
+                            if let expirationDate = transaction.expirationDate {
+                                response["expirationDate"] = ISO8601DateFormatter().string(from: expirationDate)
+                                response["isActive"] = expirationDate > Date()
+                            }
+                        }
+                        
+                        // Add revocation information if applicable
+                        if transaction.revocationDate != nil {
+                            response["isRevoked"] = true
+                            response["revocationDate"] = ISO8601DateFormatter().string(from: transaction.revocationDate!)
+                            response["revocationReason"] = transaction.revocationReason?.rawValue
+                        } else {
+                            response["isRevoked"] = false
+                        }
+
                         await transaction.finish()
                         call.resolve(response)
                     case let .success(.unverified(_, error)):
@@ -210,6 +233,29 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                     purchaseData["receipt"] = receiptBase64
                                 }
 
+                                // Add detailed transaction information
+                                purchaseData["productIdentifier"] = transaction.productID
+                                purchaseData["purchaseDate"] = ISO8601DateFormatter().string(from: transaction.purchaseDate)
+                                purchaseData["productType"] = transaction.productType == .autoRenewable ? "subs" : "inapp"
+                                
+                                // Add subscription-specific information
+                                if transaction.productType == .autoRenewable {
+                                    purchaseData["originalPurchaseDate"] = ISO8601DateFormatter().string(from: transaction.originalPurchaseDate)
+                                    if let expirationDate = transaction.expirationDate {
+                                        purchaseData["expirationDate"] = ISO8601DateFormatter().string(from: expirationDate)
+                                        purchaseData["isActive"] = expirationDate > Date()
+                                    }
+                                }
+                                
+                                // Add revocation information if applicable
+                                if transaction.revocationDate != nil {
+                                    purchaseData["isRevoked"] = true
+                                    purchaseData["revocationDate"] = ISO8601DateFormatter().string(from: transaction.revocationDate!)
+                                    purchaseData["revocationReason"] = transaction.revocationReason?.rawValue
+                                } else {
+                                    purchaseData["isRevoked"] = false
+                                }
+
                                 allPurchases.append(purchaseData)
                             }
                         }
@@ -236,6 +282,29 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                        let receiptData = try? Data(contentsOf: appStoreReceiptURL) {
                                         let receiptBase64 = receiptData.base64EncodedString()
                                         purchaseData["receipt"] = receiptBase64
+                                    }
+
+                                    // Add detailed transaction information
+                                    purchaseData["productIdentifier"] = transaction.productID
+                                    purchaseData["purchaseDate"] = ISO8601DateFormatter().string(from: transaction.purchaseDate)
+                                    purchaseData["productType"] = transaction.productType == .autoRenewable ? "subs" : "inapp"
+                                    
+                                    // Add subscription-specific information
+                                    if transaction.productType == .autoRenewable {
+                                        purchaseData["originalPurchaseDate"] = ISO8601DateFormatter().string(from: transaction.originalPurchaseDate)
+                                        if let expirationDate = transaction.expirationDate {
+                                            purchaseData["expirationDate"] = ISO8601DateFormatter().string(from: expirationDate)
+                                            purchaseData["isActive"] = expirationDate > Date()
+                                        }
+                                    }
+                                    
+                                    // Add revocation information if applicable
+                                    if transaction.revocationDate != nil {
+                                        purchaseData["isRevoked"] = true
+                                        purchaseData["revocationDate"] = ISO8601DateFormatter().string(from: transaction.revocationDate!)
+                                        purchaseData["revocationReason"] = transaction.revocationReason?.rawValue
+                                    } else {
+                                        purchaseData["isRevoked"] = false
                                     }
 
                                     allPurchases.append(purchaseData)

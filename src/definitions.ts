@@ -153,11 +153,71 @@ export interface Transaction {
   /**
    * Product Id associated with the transaction.
    */
-  // readonly productIdentifier: string;
+  readonly productIdentifier: string;
   /**
    * Purchase date of the transaction in ISO 8601 format.
    */
-  // readonly purchaseDate: string;
+  readonly purchaseDate: string;
+  /**
+   * Original purchase date of the transaction in ISO 8601 format (for subscriptions).
+   */
+  readonly originalPurchaseDate?: string;
+  /**
+   * Expiration date of the transaction in ISO 8601 format (for subscriptions).
+   */
+  readonly expirationDate?: string;
+  /**
+   * Whether the transaction is still active/valid.
+   */
+  readonly isActive?: boolean;
+  /**
+   * Purchase state of the transaction.
+   */
+  readonly purchaseState?: string;
+  /**
+   * Order ID associated with the transaction (Android).
+   */
+  readonly orderId?: string;
+  /**
+   * Purchase token associated with the transaction (Android).
+   */
+  readonly purchaseToken?: string;
+  /**
+   * Whether the purchase has been acknowledged (Android).
+   */
+  readonly isAcknowledged?: boolean;
+  /**
+   * Quantity purchased.
+   */
+  readonly quantity?: number;
+  /**
+   * Product type (inapp or subs).
+   */
+  readonly productType?: string;
+  /**
+   * Whether the transaction is a trial period.
+   */
+  readonly isTrialPeriod?: boolean;
+  /**
+   * Whether the transaction is in intro price period.
+   */
+  readonly isInIntroPricePeriod?: boolean;
+  /**
+   * Whether the transaction is in grace period.
+   */
+  readonly isInGracePeriod?: boolean;
+  /**
+   * Whether the transaction is revoked.
+   */
+  readonly isRevoked?: boolean;
+  /**
+   * Revocation date if the transaction was revoked.
+   */
+  readonly revocationDate?: string;
+  /**
+   * Revocation reason if the transaction was revoked.
+   */
+  readonly revocationReason?: string;
 }
 
 export interface SubscriptionPeriod {
