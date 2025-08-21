@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.4.0](https://github.com/Cap-go/capacitor-native-purchases/compare/7.3.2...7.4.0) (2025-08-21)
+
+
+### Features
+
+* enhance transaction details in NativePurchasesPlugin for iOS and Android, update README and TypeScript definitions ([3580244](https://github.com/Cap-go/capacitor-native-purchases/commit/3580244da48e36dd4e9a225f76bc16dcf6640c05))
+
 ## [7.3.2](https://github.com/Cap-go/capacitor-native-purchases/compare/7.3.1...7.3.2) (2025-08-19)
 
 ## [7.3.1](https://github.com/Cap-go/capacitor-native-purchases/compare/7.3.0...7.3.1) (2025-08-19)
