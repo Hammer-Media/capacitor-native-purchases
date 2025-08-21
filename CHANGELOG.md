@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.5.1](https://github.com/Cap-go/capacitor-native-purchases/compare/7.5.0...7.5.1) (2025-08-21)
+
+
+### Bug Fixes
+
+* clarify cancellation date availability in Transaction interface for iOS ([78cf80c](https://github.com/Cap-go/capacitor-native-purchases/commit/78cf80c8dc5a2831b0583eae9b5be2b6bd2dbb38))
+
 ## [7.5.0](https://github.com/Cap-go/capacitor-native-purchases/compare/7.4.0...7.5.0) (2025-08-21)
 
 
