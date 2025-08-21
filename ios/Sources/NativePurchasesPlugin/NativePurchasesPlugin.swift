@@ -92,17 +92,16 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                             response["originalPurchaseDate"] = ISO8601DateFormatter().string(from: transaction.originalPurchaseDate)
                             if let expirationDate = transaction.expirationDate {
                                 response["expirationDate"] = ISO8601DateFormatter().string(from: expirationDate)
-                                response["isActive"] = expirationDate > Date()
+                                let isActive = expirationDate > Date()
+                                response["isActive"] = isActive
                             }
                         }
                         
-                        // Add revocation information if applicable
-                        if transaction.revocationDate != nil {
-                            response["isRevoked"] = true
-                            response["revocationDate"] = ISO8601DateFormatter().string(from: transaction.revocationDate!)
-                            response["revocationReason"] = transaction.revocationReason?.rawValue
+                        // Add cancellation information
+                        if let revocationDate = transaction.revocationDate {
+                            response["willCancel"] = ISO8601DateFormatter().string(from: revocationDate)
                         } else {
-                            response["isRevoked"] = false
+                            response["willCancel"] = nil
                         }
 
                         await transaction.finish()
@@ -243,17 +242,16 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                     purchaseData["originalPurchaseDate"] = ISO8601DateFormatter().string(from: transaction.originalPurchaseDate)
                                     if let expirationDate = transaction.expirationDate {
                                         purchaseData["expirationDate"] = ISO8601DateFormatter().string(from: expirationDate)
-                                        purchaseData["isActive"] = expirationDate > Date()
+                                        let isActive = expirationDate > Date()
+                                        purchaseData["isActive"] = isActive
                                     }
                                 }
                                 
-                                // Add revocation information if applicable
-                                if transaction.revocationDate != nil {
-                                    purchaseData["isRevoked"] = true
-                                    purchaseData["revocationDate"] = ISO8601DateFormatter().string(from: transaction.revocationDate!)
-                                    purchaseData["revocationReason"] = transaction.revocationReason?.rawValue
+                                // Add cancellation information
+                                if let revocationDate = transaction.revocationDate {
+                                    purchaseData["willCancel"] = ISO8601DateFormatter().string(from: revocationDate)
                                 } else {
-                                    purchaseData["isRevoked"] = false
+                                    purchaseData["willCancel"] = nil
                                 }
 
                                 allPurchases.append(purchaseData)
@@ -294,17 +292,16 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                         purchaseData["originalPurchaseDate"] = ISO8601DateFormatter().string(from: transaction.originalPurchaseDate)
                                         if let expirationDate = transaction.expirationDate {
                                             purchaseData["expirationDate"] = ISO8601DateFormatter().string(from: expirationDate)
-                                            purchaseData["isActive"] = expirationDate > Date()
+                                            let isActive = expirationDate > Date()
+                                            purchaseData["isActive"] = isActive
                                         }
                                     }
                                     
-                                    // Add revocation information if applicable
-                                    if transaction.revocationDate != nil {
-                                        purchaseData["isRevoked"] = true
-                                        purchaseData["revocationDate"] = ISO8601DateFormatter().string(from: transaction.revocationDate!)
-                                        purchaseData["revocationReason"] = transaction.revocationReason?.rawValue
+                                    // Add cancellation information
+                                    if let revocationDate = transaction.revocationDate {
+                                        purchaseData["willCancel"] = ISO8601DateFormatter().string(from: revocationDate)
                                     } else {
-                                        purchaseData["isRevoked"] = false
+                                        purchaseData["willCancel"] = nil
                                     }
 
                                     allPurchases.append(purchaseData)

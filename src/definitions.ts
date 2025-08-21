@@ -171,6 +171,10 @@ export interface Transaction {
    */
   readonly isActive?: boolean;
   /**
+   * Date when the subscription was cancelled/revoked, or null if not cancelled.
+   */
+  readonly willCancel?: string | null;
+  /**
    * Purchase state of the transaction.
    */
   readonly purchaseState?: string;
@@ -206,18 +210,6 @@ export interface Transaction {
    * Whether the transaction is in grace period.
    */
   readonly isInGracePeriod?: boolean;
-  /**
-   * Whether the transaction is revoked.
-   */
-  readonly isRevoked?: boolean;
-  /**
-   * Revocation date if the transaction was revoked.
-   */
-  readonly revocationDate?: string;
-  /**
-   * Revocation reason if the transaction was revoked.
-   */
-  readonly revocationReason?: string;
 }
 
 export interface SubscriptionPeriod {
