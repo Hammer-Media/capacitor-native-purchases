@@ -14,9 +14,5 @@ Pod::Spec.new do |s|
   s.exclude_files = '**/node_modules/**/*', '**/examples/**/*'
   s.ios.deployment_target = '14.0'
   s.dependency 'Capacitor'
-  s.dependency 'FBSDKCoreKit', '18.0.0'
-  s.dependency 'FBSDKLoginKit', '18.0.0'
-  s.dependency 'GoogleSignIn', '~> 9.0.0'
-  s.dependency 'Alamofire', '~> 5.10.2'
   s.swift_version = '5.1'
 end
