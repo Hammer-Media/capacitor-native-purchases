@@ -173,7 +173,7 @@ export interface Transaction {
   /**
    * Date when the subscription was cancelled/revoked, or null if not cancelled. Only available on iOS.
    */
-  readonly willCancel?: string | null;
+  readonly willCancel: string | null;
   /**
    * Purchase state of the transaction.
    */

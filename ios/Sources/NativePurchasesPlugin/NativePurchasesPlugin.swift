@@ -97,7 +97,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                             }
                         }
                         
-                        // Add cancellation information
+                        // Add cancellation information - ALWAYS set willCancel
                         if let revocationDate = transaction.revocationDate {
                             response["willCancel"] = ISO8601DateFormatter().string(from: revocationDate)
                         } else {
@@ -247,7 +247,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                     }
                                 }
                                 
-                                // Add cancellation information
+                                // Add cancellation information - ALWAYS set willCancel
                                 if let revocationDate = transaction.revocationDate {
                                     purchaseData["willCancel"] = ISO8601DateFormatter().string(from: revocationDate)
                                 } else {
@@ -297,7 +297,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                         }
                                     }
                                     
-                                    // Add cancellation information
+                                    // Add cancellation information - ALWAYS set willCancel
                                     if let revocationDate = transaction.revocationDate {
                                         purchaseData["willCancel"] = ISO8601DateFormatter().string(from: revocationDate)
                                     } else {

@@ -165,7 +165,7 @@ public class NativePurchasesPlugin extends Plugin {
       ret.put("isAcknowledged", purchase.isAcknowledged());
       ret.put("purchaseState", String.valueOf(purchase.getPurchaseState()));
 
-      // Add cancellation information
+      // Add cancellation information - ALWAYS set willCancel
       // Note: Android doesn't provide direct cancellation information in the Purchase object
       // This would require additional Google Play API calls to get detailed subscription status
       ret.put("willCancel", null); // Default to null, would need API call to determine actual cancellation date
@@ -956,7 +956,7 @@ public class NativePurchasesPlugin extends Plugin {
                   "purchaseState",
                   String.valueOf(purchase.getPurchaseState())
                 );
-                // Add cancellation information
+                // Add cancellation information - ALWAYS set willCancel
                 // Note: Android doesn't provide direct cancellation information in the Purchase object
                 purchaseData.put("willCancel", null); // Default to null, would need API call to determine actual cancellation date
                 allPurchases.put(purchaseData);
@@ -1099,7 +1099,7 @@ public class NativePurchasesPlugin extends Plugin {
                   "purchaseState",
                   String.valueOf(purchase.getPurchaseState())
                 );
-                // Add cancellation information
+                // Add cancellation information - ALWAYS set willCancel
                 // Note: Android doesn't provide direct cancellation information in the Purchase object
                 purchaseData.put("willCancel", null); // Default to null, would need API call to determine actual cancellation date
                 allPurchases.put(purchaseData);
