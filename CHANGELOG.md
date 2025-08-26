@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.5.4](https://github.com/Cap-go/capacitor-native-purchases/compare/7.5.3...7.5.4) (2025-08-26)
+
+
+### Bug Fixes
+
+* ensure willCancel is always set in cancellation information for purchases ([96860c7](https://github.com/Cap-go/capacitor-native-purchases/commit/96860c711cb97ef3ac680b67801766b4538cec36))
+
 ## [7.5.3](https://github.com/Cap-go/capacitor-native-purchases/compare/7.5.2...7.5.3) (2025-08-25)
 
 ## [7.5.2](https://github.com/Cap-go/capacitor-native-purchases/compare/7.5.1...7.5.2) (2025-08-22)
