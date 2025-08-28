@@ -101,7 +101,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                         if let revocationDate = transaction.revocationDate {
                             response["willCancel"] = ISO8601DateFormatter().string(from: revocationDate)
                         } else {
-                            response["willCancel"] = nil
+                            response["willCancel"] = NSNull()
                         }
 
                         await transaction.finish()
@@ -251,7 +251,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                 if let revocationDate = transaction.revocationDate {
                                     purchaseData["willCancel"] = ISO8601DateFormatter().string(from: revocationDate)
                                 } else {
-                                    purchaseData["willCancel"] = nil
+                                    purchaseData["willCancel"] = NSNull()
                                 }
 
                                 allPurchases.append(purchaseData)
@@ -301,7 +301,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                     if let revocationDate = transaction.revocationDate {
                                         purchaseData["willCancel"] = ISO8601DateFormatter().string(from: revocationDate)
                                     } else {
-                                        purchaseData["willCancel"] = nil
+                                        purchaseData["willCancel"] = NSNull()
                                     }
 
                                     allPurchases.append(purchaseData)
