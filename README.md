@@ -848,25 +848,25 @@ This method queries the platform's purchase history for the current user.
 
 #### Transaction
 
-| Prop                       | Type                        | Description                                                                                        |
-| -------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------- |
-| **`transactionId`**        | <code>string</code>         | RevenueCat Id associated to the transaction.                                                       |
-| **`receipt`**              | <code>string</code>         | Receipt data for validation (iOS only - base64 encoded receipt)                                    |
-| **`productIdentifier`**    | <code>string</code>         | <a href="#product">Product</a> Id associated with the transaction.                                 |
-| **`purchaseDate`**         | <code>string</code>         | Purchase date of the transaction in ISO 8601 format.                                               |
-| **`originalPurchaseDate`** | <code>string</code>         | Original purchase date of the transaction in ISO 8601 format (for subscriptions).                  |
-| **`expirationDate`**       | <code>string</code>         | Expiration date of the transaction in ISO 8601 format (for subscriptions).                         |
-| **`isActive`**             | <code>boolean</code>        | Whether the transaction is still active/valid.                                                     |
-| **`willCancel`**           | <code>string \| null</code> | Date when the subscription was cancelled/revoked, or null if not cancelled. Only available on iOS. |
-| **`purchaseState`**        | <code>string</code>         | Purchase state of the transaction.                                                                 |
-| **`orderId`**              | <code>string</code>         | Order ID associated with the transaction (Android).                                                |
-| **`purchaseToken`**        | <code>string</code>         | Purchase token associated with the transaction (Android).                                          |
-| **`isAcknowledged`**       | <code>boolean</code>        | Whether the purchase has been acknowledged (Android).                                              |
-| **`quantity`**             | <code>number</code>         | Quantity purchased.                                                                                |
-| **`productType`**          | <code>string</code>         | <a href="#product">Product</a> type (inapp or subs).                                               |
-| **`isTrialPeriod`**        | <code>boolean</code>        | Whether the transaction is a trial period.                                                         |
-| **`isInIntroPricePeriod`** | <code>boolean</code>        | Whether the transaction is in intro price period.                                                  |
-| **`isInGracePeriod`**      | <code>boolean</code>        | Whether the transaction is in grace period.                                                        |
+| Prop                       | Type                         | Description                                                                                                                  |
+| -------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **`transactionId`**        | <code>string</code>          | RevenueCat Id associated to the transaction.                                                                                 |
+| **`receipt`**              | <code>string</code>          | Receipt data for validation (iOS only - base64 encoded receipt)                                                              |
+| **`productIdentifier`**    | <code>string</code>          | <a href="#product">Product</a> Id associated with the transaction.                                                           |
+| **`purchaseDate`**         | <code>string</code>          | Purchase date of the transaction in ISO 8601 format.                                                                         |
+| **`originalPurchaseDate`** | <code>string</code>          | Original purchase date of the transaction in ISO 8601 format (for subscriptions).                                            |
+| **`expirationDate`**       | <code>string</code>          | Expiration date of the transaction in ISO 8601 format (for subscriptions).                                                   |
+| **`isActive`**             | <code>boolean</code>         | Whether the transaction is still active/valid.                                                                               |
+| **`willCancel`**           | <code>boolean \| null</code> | Whether the subscription will be cancelled at the end of the billing cycle, or null if not cancelled. Only available on iOS. |
+| **`purchaseState`**        | <code>string</code>          | Purchase state of the transaction.                                                                                           |
+| **`orderId`**              | <code>string</code>          | Order ID associated with the transaction (Android).                                                                          |
+| **`purchaseToken`**        | <code>string</code>          | Purchase token associated with the transaction (Android).                                                                    |
+| **`isAcknowledged`**       | <code>boolean</code>         | Whether the purchase has been acknowledged (Android).                                                                        |
+| **`quantity`**             | <code>number</code>          | Quantity purchased.                                                                                                          |
+| **`productType`**          | <code>string</code>          | <a href="#product">Product</a> type (inapp or subs).                                                                         |
+| **`isTrialPeriod`**        | <code>boolean</code>         | Whether the transaction is a trial period.                                                                                   |
+| **`isInIntroPricePeriod`** | <code>boolean</code>         | Whether the transaction is in intro price period.                                                                            |
+| **`isInGracePeriod`**      | <code>boolean</code>         | Whether the transaction is in grace period.                                                                                  |
 
 
 #### Product
