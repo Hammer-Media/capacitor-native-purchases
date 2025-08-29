@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.6.0](https://github.com/Cap-go/capacitor-native-purchases/compare/7.5.5...7.6.0) (2025-08-29)
+
+
+### Features
+
+* implement willcancel properly on iOS ([4432b6c](https://github.com/Cap-go/capacitor-native-purchases/commit/4432b6c5a03ac1697e7a3ddec742530cfe928b5f))
+
 ## [7.5.5](https://github.com/Cap-go/capacitor-native-purchases/compare/7.5.4...7.5.5) (2025-08-28)
 
 
