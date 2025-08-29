@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.5.5](https://github.com/Cap-go/capacitor-native-purchases/compare/7.5.4...7.5.5) (2025-08-28)
+
+
+### Bug Fixes
+
+* force willCancel on iOS to return null to JS ([5ad06a0](https://github.com/Cap-go/capacitor-native-purchases/commit/5ad06a0a883e0399826d5cbe93a8cfedcdf7ee1b))
+
 ## [7.5.4](https://github.com/Cap-go/capacitor-native-purchases/compare/7.5.3...7.5.4) (2025-08-26)
 
 
