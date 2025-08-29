@@ -97,11 +97,30 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                             }
                         }
                         
-                        // Add cancellation information - ALWAYS set willCancel
-                        if let revocationDate = transaction.revocationDate {
-                            response["willCancel"] = ISO8601DateFormatter().string(from: revocationDate)
-                        } else {
-                            response["willCancel"] = NSNull()
+                        let subscriptionStatus = await transaction.subscriptionStatus
+                        if let subscriptionStatus = subscriptionStatus {
+                            // You can use 'state' here if needed
+                            let state = subscriptionStatus.state
+                            if state == .subscribed {
+                                // Use Objective-C reflection to access advancedCommerceInfo
+                                let renewalInfo = subscriptionStatus.renewalInfo
+                                
+                                switch (renewalInfo) {
+                                case .verified(let value):
+//                                            if #available(iOS 18.4, *) {
+//                                                // This should work but may need runtime access
+//                                                let advancedInfo = value.advancedCommerceInfo
+//                                                print("Advanced commerce info: \(advancedInfo)")
+//                                            }
+//                                            print("[InAppPurchase] Subscription renewalInfo verified.")
+                                    response["willCancel"] = !value.willAutoRenew
+                                    break;
+                                case .unverified(_, _):
+                                    print("[InAppPurchase] Subscription renewalInfo not verified.")
+                                    response["willCancel"] = NSNull()
+                                    break;
+                                }
+                            }
                         }
 
                         await transaction.finish()
@@ -247,11 +266,30 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                     }
                                 }
                                 
-                                // Add cancellation information - ALWAYS set willCancel
-                                if let revocationDate = transaction.revocationDate {
-                                    purchaseData["willCancel"] = ISO8601DateFormatter().string(from: revocationDate)
-                                } else {
-                                    purchaseData["willCancel"] = NSNull()
+                                let subscriptionStatus = await transaction.subscriptionStatus
+                                if let subscriptionStatus = subscriptionStatus {
+                                    // You can use 'state' here if needed
+                                    let state = subscriptionStatus.state
+                                    if state == .subscribed {
+                                        // Use Objective-C reflection to access advancedCommerceInfo
+                                        let renewalInfo = subscriptionStatus.renewalInfo
+                                        
+                                        switch (renewalInfo) {
+                                        case .verified(let value):
+//                                            if #available(iOS 18.4, *) {
+//                                                // This should work but may need runtime access
+//                                                let advancedInfo = value.advancedCommerceInfo
+//                                                print("Advanced commerce info: \(advancedInfo)")
+//                                            }
+//                                            print("[InAppPurchase] Subscription renewalInfo verified.")
+                                            purchaseData["willCancel"] = !value.willAutoRenew
+                                            break;
+                                        case .unverified(_, _):
+                                            print("[InAppPurchase] Subscription renewalInfo not verified.")
+                                            purchaseData["willCancel"] = NSNull()
+                                            break;
+                                        }
+                                    }
                                 }
 
                                 allPurchases.append(purchaseData)
@@ -297,11 +335,30 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                         }
                                     }
                                     
-                                    // Add cancellation information - ALWAYS set willCancel
-                                    if let revocationDate = transaction.revocationDate {
-                                        purchaseData["willCancel"] = ISO8601DateFormatter().string(from: revocationDate)
-                                    } else {
-                                        purchaseData["willCancel"] = NSNull()
+                                    let subscriptionStatus = await transaction.subscriptionStatus
+                                    if let subscriptionStatus = subscriptionStatus {
+                                        // You can use 'state' here if needed
+                                        let state = subscriptionStatus.state
+                                        if state == .subscribed {
+                                            // Use Objective-C reflection to access advancedCommerceInfo
+                                            let renewalInfo = subscriptionStatus.renewalInfo
+                                            
+                                            switch (renewalInfo) {
+                                            case .verified(let value):
+    //                                            if #available(iOS 18.4, *) {
+    //                                                // This should work but may need runtime access
+    //                                                let advancedInfo = value.advancedCommerceInfo
+    //                                                print("Advanced commerce info: \(advancedInfo)")
+    //                                            }
+    //                                            print("[InAppPurchase] Subscription renewalInfo verified.")
+                                                purchaseData["willCancel"] = !value.willAutoRenew
+                                                break;
+                                            case .unverified(_, _):
+                                                print("[InAppPurchase] Subscription renewalInfo not verified.")
+                                                purchaseData["willCancel"] = NSNull()
+                                                break;
+                                            }
+                                        }
                                     }
 
                                     allPurchases.append(purchaseData)

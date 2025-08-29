@@ -171,9 +171,9 @@ export interface Transaction {
    */
   readonly isActive?: boolean;
   /**
-   * Date when the subscription was cancelled/revoked, or null if not cancelled. Only available on iOS.
+   * Whether the subscription will be cancelled at the end of the billing cycle, or null if not cancelled. Only available on iOS.
    */
-  readonly willCancel: string | null;
+  readonly willCancel: boolean | null;
   /**
    * Purchase state of the transaction.
    */
