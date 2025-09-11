@@ -21,9 +21,95 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
     ]
 
     private let PLUGIN_VERSION = "0.0.25"
+    private var transactionUpdatesTask: Any? = nil
 
     @objc func getPluginVersion(_ call: CAPPluginCall) {
         call.resolve(["version": self.PLUGIN_VERSION])
+    }
+
+    public override func load() {
+        super.load()
+        // Start listening to StoreKit transaction updates as early as possible
+        if #available(iOS 15.0, *) {
+            startTransactionUpdatesListener()
+        }
+    }
+
+    public override func handleReset() {
+        super.handleReset()
+        // Cancel listener when the bridge resets
+        if #available(iOS 15.0, *) {
+            cancelTransactionUpdatesListener()
+            startTransactionUpdatesListener()
+        }
+    }
+
+    private func cancelTransactionUpdatesListener() {
+        if let task = transactionUpdatesTask as? Task<Void, Never> {
+            task.cancel()
+        }
+        transactionUpdatesTask = nil
+    }
+
+    @available(iOS 15.0, *)
+    private func startTransactionUpdatesListener() {
+        // Ensure only one listener is running
+        cancelTransactionUpdatesListener()
+        let task = Task.detached { [weak self] in
+            for await result in Transaction.updates {
+                guard !Task.isCancelled else { break }
+                do {
+                    guard case .verified(let transaction) = result else {
+                        // Ignore/unverified transactions; nothing to finish
+                        continue
+                    }
+
+                    // Build payload similar to purchase response
+                    var payload: [String: Any] = ["transactionId": String(transaction.id)]
+
+                    if let appStoreReceiptURL = Bundle.main.appStoreReceiptURL,
+                       FileManager.default.fileExists(atPath: appStoreReceiptURL.path),
+                       let receiptData = try? Data(contentsOf: appStoreReceiptURL) {
+                        payload["receipt"] = receiptData.base64EncodedString()
+                    }
+
+                    payload["productIdentifier"] = transaction.productID
+                    payload["purchaseDate"] = ISO8601DateFormatter().string(from: transaction.purchaseDate)
+                    payload["productType"] = transaction.productType == .autoRenewable ? "subs" : "inapp"
+
+                    if transaction.productType == .autoRenewable {
+                        payload["originalPurchaseDate"] = ISO8601DateFormatter().string(from: transaction.originalPurchaseDate)
+                        if let expirationDate = transaction.expirationDate {
+                            payload["expirationDate"] = ISO8601DateFormatter().string(from: expirationDate)
+                            payload["isActive"] = expirationDate > Date()
+                        }
+                    }
+
+                    let subscriptionStatus = await transaction.subscriptionStatus
+                    if let subscriptionStatus = subscriptionStatus {
+                        if subscriptionStatus.state == .subscribed {
+                            let renewalInfo = subscriptionStatus.renewalInfo
+                            switch renewalInfo {
+                            case .verified(let value):
+                                payload["willCancel"] = !value.willAutoRenew
+                            case .unverified(_, _):
+                                payload["willCancel"] = NSNull()
+                            }
+                        }
+                    }
+
+                    // Finish the transaction to avoid blocking future purchases
+                    await transaction.finish()
+
+                    // Notify JS listeners on main thread, after slight delay
+                    try? await Task.sleep(nanoseconds: 500_000_000) // 0.5s delay
+                    await MainActor.run {
+                        self?.notifyListeners("transactionUpdated", data: payload)
+                    }
+                }
+            }
+        }
+        transactionUpdatesTask = task
     }
 
     @objc func isBillingSupported(_ call: CAPPluginCall) {

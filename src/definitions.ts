@@ -1,3 +1,5 @@
+import type { PluginListenerHandle } from '@capacitor/core';
+
 export enum ATTRIBUTION_NETWORK {
   APPLE_SEARCH_ADS = 0,
   ADJUST = 1,
@@ -388,4 +390,17 @@ export interface NativePurchasesPlugin {
   getPurchases(options?: {
     productType?: PURCHASE_TYPE;
   }): Promise<{ purchases: Transaction[] }>;
+
+  /**
+   * Listen for StoreKit transaction updates delivered by Apple's Transaction.updates.
+   * Fires on app launch if there are unfinished transactions, and for any updates afterward.
+   * iOS only.
+   */
+  addListener(
+    eventName: 'transactionUpdated',
+    listenerFunc: (transaction: Transaction) => void
+  ): Promise<PluginListenerHandle>;
+
+  /** Remove all registered listeners */
+  removeAllListeners(): Promise<void>;
 }
