@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.7.4](https://github.com/Cap-go/capacitor-native-purchases/compare/7.7.3...7.7.4) (2025-09-12)
+
+
+### Bug Fixes
+
+* add dependencyDashboard setting to renovate configuration ([f5c205e](https://github.com/Cap-go/capacitor-native-purchases/commit/f5c205e6014ab95d69c79fcc882681839b07ca34))
+
 ## [7.7.3](https://github.com/Cap-go/capacitor-native-purchases/compare/7.7.2...7.7.3) (2025-09-12)
 
 
