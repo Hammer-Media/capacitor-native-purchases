@@ -21,7 +21,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
     ]
 
     private let PLUGIN_VERSION = "0.0.25"
-    private var transactionUpdatesTask: Any? = nil
+    private var transactionUpdatesTask: Task<Void, Never>?
 
     @objc func getPluginVersion(_ call: CAPPluginCall) {
         call.resolve(["version": self.PLUGIN_VERSION])
@@ -35,20 +35,13 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
-    public override func handleReset() {
-        super.handleReset()
-        // Cancel listener when the bridge resets
-        if #available(iOS 15.0, *) {
-            cancelTransactionUpdatesListener()
-            startTransactionUpdatesListener()
-        }
+    deinit {
+        if #available(iOS 15.0, *) { cancelTransactionUpdatesListener() }
     }
 
     private func cancelTransactionUpdatesListener() {
-        if let task = transactionUpdatesTask as? Task<Void, Never> {
-            task.cancel()
-        }
-        transactionUpdatesTask = nil
+        self.transactionUpdatesTask?.cancel()
+        self.transactionUpdatesTask = nil
     }
 
     @available(iOS 15.0, *)
@@ -56,6 +49,9 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
         // Ensure only one listener is running
         cancelTransactionUpdatesListener()
         let task = Task.detached { [weak self] in
+            // Create a single ISO8601DateFormatter once per Task to avoid repeated allocations
+            let dateFormatter = ISO8601DateFormatter()
+            
             for await result in Transaction.updates {
                 guard !Task.isCancelled else { break }
                 do {
@@ -66,6 +62,9 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
 
                     // Build payload similar to purchase response
                     var payload: [String: Any] = ["transactionId": String(transaction.id)]
+                    
+                    // Always include willCancel key with NSNull() default
+                    payload["willCancel"] = NSNull()
 
                     if let appStoreReceiptURL = Bundle.main.appStoreReceiptURL,
                        FileManager.default.fileExists(atPath: appStoreReceiptURL.path),
@@ -74,13 +73,13 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                     }
 
                     payload["productIdentifier"] = transaction.productID
-                    payload["purchaseDate"] = ISO8601DateFormatter().string(from: transaction.purchaseDate)
+                    payload["purchaseDate"] = dateFormatter.string(from: transaction.purchaseDate)
                     payload["productType"] = transaction.productType == .autoRenewable ? "subs" : "inapp"
 
                     if transaction.productType == .autoRenewable {
-                        payload["originalPurchaseDate"] = ISO8601DateFormatter().string(from: transaction.originalPurchaseDate)
+                        payload["originalPurchaseDate"] = dateFormatter.string(from: transaction.originalPurchaseDate)
                         if let expirationDate = transaction.expirationDate {
-                            payload["expirationDate"] = ISO8601DateFormatter().string(from: expirationDate)
+                            payload["expirationDate"] = dateFormatter.string(from: expirationDate)
                             payload["isActive"] = expirationDate > Date()
                         }
                     }
@@ -93,7 +92,8 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                             case .verified(let value):
                                 payload["willCancel"] = !value.willAutoRenew
                             case .unverified(_, _):
-                                payload["willCancel"] = NSNull()
+                                // willCancel remains NSNull() for unverified renewalInfo
+                                break
                             }
                         }
                     }
