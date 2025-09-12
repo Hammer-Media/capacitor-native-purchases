@@ -1,4 +1,4 @@
-import type { PluginListenerHandle } from '@capacitor/core';
+import type { PluginListenerHandle } from "@capacitor/core";
 
 export enum ATTRIBUTION_NETWORK {
   APPLE_SEARCH_ADS = 0,
@@ -397,8 +397,8 @@ export interface NativePurchasesPlugin {
    * iOS only.
    */
   addListener(
-    eventName: 'transactionUpdated',
-    listenerFunc: (transaction: Transaction) => void
+    eventName: "transactionUpdated",
+    listenerFunc: (transaction: Transaction) => void,
   ): Promise<PluginListenerHandle>;
 
   /** Remove all registered listeners */
