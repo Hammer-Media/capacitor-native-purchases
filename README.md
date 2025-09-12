@@ -848,7 +848,7 @@ This method queries the platform's purchase history for the current user.
 ### addListener('transactionUpdated', ...)
 
 ```typescript
-addListener(eventName: 'transactionUpdated', listenerFunc: (transaction: Transaction) => void) => Promise<PluginListenerHandle>
+addListener(eventName: "transactionUpdated", listenerFunc: (transaction: Transaction) => void) => Promise<PluginListenerHandle>
 ```
 
 Listen for StoreKit transaction updates delivered by Apple's <a href="#transaction">Transaction</a>.updates.
