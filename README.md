@@ -727,6 +727,8 @@ This approach balances immediate user gratification with proper server-side vali
 * [`isBillingSupported()`](#isbillingsupported)
 * [`getPluginVersion()`](#getpluginversion)
 * [`getPurchases(...)`](#getpurchases)
+* [`addListener('transactionUpdated', ...)`](#addlistenertransactionupdated-)
+* [`removeAllListeners()`](#removealllisteners)
 * [Interfaces](#interfaces)
 * [Enums](#enums)
 
@@ -843,6 +845,37 @@ This method queries the platform's purchase history for the current user.
 --------------------
 
 
+### addListener('transactionUpdated', ...)
+
+```typescript
+addListener(eventName: 'transactionUpdated', listenerFunc: (transaction: Transaction) => void) => Promise<PluginListenerHandle>
+```
+
+Listen for StoreKit transaction updates delivered by Apple's <a href="#transaction">Transaction</a>.updates.
+Fires on app launch if there are unfinished transactions, and for any updates afterward.
+iOS only.
+
+| Param              | Type                                                                          |
+| ------------------ | ----------------------------------------------------------------------------- |
+| **`eventName`**    | <code>'transactionUpdated'</code>                                             |
+| **`listenerFunc`** | <code>(transaction: <a href="#transaction">Transaction</a>) =&gt; void</code> |
+
+**Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
+
+--------------------
+
+
+### removeAllListeners()
+
+```typescript
+removeAllListeners() => Promise<void>
+```
+
+Remove all registered listeners
+
+--------------------
+
+
 ### Interfaces
 
 
@@ -908,6 +941,13 @@ This method queries the platform's purchase history for the current user.
 | **`paymentMode`**        | <code>number</code>                                               | The <a href="#product">Product</a> discount paymentMode.                 |
 | **`numberOfPeriods`**    | <code>number</code>                                               | The <a href="#product">Product</a> discount number Of Periods.           |
 | **`subscriptionPeriod`** | <code><a href="#subscriptionperiod">SubscriptionPeriod</a></code> | The <a href="#product">Product</a> discount subscription period.         |
+
+
+#### PluginListenerHandle
+
+| Prop         | Type                                      |
+| ------------ | ----------------------------------------- |
+| **`remove`** | <code>() =&gt; Promise&lt;void&gt;</code> |
 
 
 ### Enums
