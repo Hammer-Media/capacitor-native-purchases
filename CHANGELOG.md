@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.7.2](https://github.com/Cap-go/capacitor-native-purchases/compare/7.7.1...7.7.2) (2025-09-12)
+
+
+### Bug Fixes
+
+* update billing client version to 8.0.0 and improve null safety checks ([8b4a89f](https://github.com/Cap-go/capacitor-native-purchases/commit/8b4a89fbbe0bc5b6ffeaba631c48247d6554d6b7))
+
 ## [7.7.1](https://github.com/Cap-go/capacitor-native-purchases/compare/7.7.0...7.7.1) (2025-09-12)
 
 ## [7.7.0](https://github.com/Cap-go/capacitor-native-purchases/compare/7.6.1...7.7.0) (2025-09-12)
