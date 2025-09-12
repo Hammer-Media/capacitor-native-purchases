@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.7.3](https://github.com/Cap-go/capacitor-native-purchases/compare/7.7.2...7.7.3) (2025-09-12)
+
+
+### Bug Fixes
+
+* disable automerge for eslint and gradle packages in renovate configuration ([b4da53b](https://github.com/Cap-go/capacitor-native-purchases/commit/b4da53bc41bedaeb0a850b2a2c914f6895f11ba5))
+
 ## [7.7.2](https://github.com/Cap-go/capacitor-native-purchases/compare/7.7.1...7.7.2) (2025-09-12)
 
 
