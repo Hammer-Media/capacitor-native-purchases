@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.7.0](https://github.com/Cap-go/capacitor-native-purchases/compare/7.6.1...7.7.0) (2025-09-12)
+
+
+### Features
+
+* implement transactions updates task ([ae3e036](https://github.com/Cap-go/capacitor-native-purchases/commit/ae3e036991365c56917f7acc0a6e9ec09b4ff97b))
+
+
+### Bug Fixes
+
+* PR ([d22b3a5](https://github.com/Cap-go/capacitor-native-purchases/commit/d22b3a5eed555614754fcbd275e9bfaeddb81072))
+
 ## [7.6.1](https://github.com/Cap-go/capacitor-native-purchases/compare/7.6.0...7.6.1) (2025-09-08)
 
 ## [7.6.0](https://github.com/Cap-go/capacitor-native-purchases/compare/7.5.5...7.6.0) (2025-08-29)
