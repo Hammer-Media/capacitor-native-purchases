@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.7.6](https://github.com/Cap-go/capacitor-native-purchases/compare/7.7.5...7.7.6) (2025-09-18)
+
+
+### Bug Fixes
+
+* reorder build steps to ensure verification occurs after linting ([88fb9d7](https://github.com/Cap-go/capacitor-native-purchases/commit/88fb9d7e029dbdbf8b0d4c1bf1a8d93453e7ed5a))
+
 ## [7.7.5](https://github.com/Cap-go/capacitor-native-purchases/compare/7.7.4...7.7.5) (2025-09-18)
 
 
