@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.7.7](https://github.com/Cap-go/capacitor-native-purchases/compare/7.7.6...7.7.7) (2025-09-22)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.google.guava:guava to v33.5.0-android ([#103](https://github.com/Cap-go/capacitor-native-purchases/issues/103)) ([51fea38](https://github.com/Cap-go/capacitor-native-purchases/commit/51fea388e7659fd1e5e9bdc70ee3a76f804ea70d))
+
 ## [7.7.6](https://github.com/Cap-go/capacitor-native-purchases/compare/7.7.5...7.7.6) (2025-09-18)
 
 
