@@ -961,3 +961,9 @@ Remove all registered listeners
 | **`SUBS`**  | <code>"subs"</code>  | A type of SKU for subscriptions.   |
 
 </docgen-api>
+
+## App Store Compliance
+
+- **Terms of Service**: https://capgo.app/terms
+- **Privacy Policy**: https://capgo.app/privacy
+- **Paywall layout example**: [docs/PAYWALL_COMPLIANCE_TEMPLATE.md](./docs/PAYWALL_COMPLIANCE_TEMPLATE.md)
