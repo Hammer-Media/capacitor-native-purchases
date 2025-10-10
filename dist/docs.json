@@ -19,12 +19,12 @@
       },
       {
         "name": "purchaseProduct",
-        "signature": "(options: { productIdentifier: string; planIdentifier?: string; productType?: PURCHASE_TYPE; quantity?: number; }) => Promise<Transaction>",
+        "signature": "(options: { productIdentifier: string; planIdentifier?: string; productType?: PURCHASE_TYPE; quantity?: number; appAccountToken?: string; }) => Promise<Transaction>",
         "parameters": [
           {
             "name": "options",
             "docs": "- The product to purchase",
-            "type": "{ productIdentifier: string; planIdentifier?: string | undefined; productType?: PURCHASE_TYPE | undefined; quantity?: number | undefined; }"
+            "type": "{ productIdentifier: string; planIdentifier?: string | undefined; productType?: PURCHASE_TYPE | undefined; quantity?: number | undefined; appAccountToken?: string | undefined; }"
           }
         ],
         "returns": "Promise<Transaction>",
@@ -48,6 +48,10 @@
           {
             "name": "param",
             "text": "options.quantity - Only iOS, the number of items you wish to purchase. Will use 1 by default."
+          },
+          {
+            "name": "param",
+            "text": "options.appAccountToken - Only iOS, UUID for the user's account. Used to link purchases to the user account for App Store Server Notifications."
           }
         ],
         "docs": "Started purchase process for the given product.",
@@ -159,6 +163,46 @@
         "slug": "getpluginversion"
       },
       {
+        "name": "getPurchases",
+        "signature": "(options?: { productType?: PURCHASE_TYPE | undefined; } | undefined) => Promise<{ purchases: Transaction[]; }>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "- Optional parameters for filtering purchases",
+            "type": "{ productType?: PURCHASE_TYPE | undefined; } | undefined"
+          }
+        ],
+        "returns": "Promise<{ purchases: Transaction[]; }>",
+        "tags": [
+          {
+            "name": "param",
+            "text": "options - Optional parameters for filtering purchases"
+          },
+          {
+            "name": "param",
+            "text": "options.productType - Only Android, filter by product type (inapp or subs). If not specified, returns both types."
+          },
+          {
+            "name": "returns",
+            "text": "Promise that resolves with array of user's purchases"
+          },
+          {
+            "name": "throws",
+            "text": "An error if the purchase query fails"
+          },
+          {
+            "name": "since",
+            "text": "7.2.0"
+          }
+        ],
+        "docs": "Gets all the user's purchases (both in-app purchases and subscriptions).\nThis method queries the platform's purchase history for the current user.",
+        "complexTypes": [
+          "Transaction",
+          "PURCHASE_TYPE"
+        ],
+        "slug": "getpurchases"
+      },
+      {
         "name": "getLatestSignedTransaction",
         "signature": "() => Promise<{ jwt: string; }>",
         "parameters": [],
@@ -183,9 +227,43 @@
         "parameters": [],
         "returns": "Promise<void>",
         "tags": [],
-        "docs": "",
+        "docs": "Opens the native subscription management interface for the user.",
         "complexTypes": [],
         "slug": "showmanagesubscriptions"
+      },
+      {
+        "name": "addListener",
+        "signature": "(eventName: \"transactionUpdated\", listenerFunc: (transaction: Transaction) => void) => Promise<PluginListenerHandle>",
+        "parameters": [
+          {
+            "name": "eventName",
+            "docs": "",
+            "type": "'transactionUpdated'"
+          },
+          {
+            "name": "listenerFunc",
+            "docs": "",
+            "type": "(transaction: Transaction) => void"
+          }
+        ],
+        "returns": "Promise<PluginListenerHandle>",
+        "tags": [],
+        "docs": "Listen for StoreKit transaction updates delivered by Apple's Transaction.updates.\nFires on app launch if there are unfinished transactions, and for any updates afterward.\niOS only.",
+        "complexTypes": [
+          "PluginListenerHandle",
+          "Transaction"
+        ],
+        "slug": "addlistenertransactionupdated-"
+      },
+      {
+        "name": "removeAllListeners",
+        "signature": "() => Promise<void>",
+        "parameters": [],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "Remove all registered listeners",
+        "complexTypes": [],
+        "slug": "removealllisteners"
       }
     ],
     "properties": []
@@ -213,9 +291,23 @@
           "type": "string | undefined"
         },
         {
+          "name": "receipt",
+          "tags": [],
+          "docs": "Receipt data for validation (iOS only - base64 encoded receipt)",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "productIdentifier",
+          "tags": [],
+          "docs": "Product Id associated with the transaction.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
           "name": "productId",
           "tags": [],
-          "docs": "Product identifier associated with the transaction.",
+          "docs": "Product identifier associated with the transaction. iOS only.",
           "complexTypes": [],
           "type": "string | undefined"
         },
@@ -229,16 +321,16 @@
         {
           "name": "purchaseDate",
           "tags": [],
-          "docs": "Purchase date in milliseconds since epoch. iOS only.",
+          "docs": "Purchase date (string in ISO 8601 format for Android, number in milliseconds since epoch for iOS).",
           "complexTypes": [],
-          "type": "number | undefined"
+          "type": "string | number | undefined"
         },
         {
           "name": "originalPurchaseDate",
           "tags": [],
-          "docs": "Original purchase date in milliseconds since epoch. iOS only.",
+          "docs": "Original purchase date (string in ISO 8601 format for Android, number in milliseconds since epoch for iOS).",
           "complexTypes": [],
-          "type": "number | undefined"
+          "type": "string | number | undefined"
         },
         {
           "name": "signedDate",
@@ -246,6 +338,41 @@
           "docs": "Transaction signed date in milliseconds since epoch. iOS only.",
           "complexTypes": [],
           "type": "number | undefined"
+        },
+        {
+          "name": "expirationDate",
+          "tags": [],
+          "docs": "Expiration date of the transaction in ISO 8601 format (for subscriptions).",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "expiresDate",
+          "tags": [],
+          "docs": "Expiration date for subscriptions (in milliseconds since epoch). iOS only.",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "isActive",
+          "tags": [],
+          "docs": "Whether the transaction is still active/valid.",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "willCancel",
+          "tags": [],
+          "docs": "Whether the subscription will be cancelled at the end of the billing cycle, or null if not cancelled. Only available on iOS.",
+          "complexTypes": [],
+          "type": "boolean | null | undefined"
+        },
+        {
+          "name": "purchaseState",
+          "tags": [],
+          "docs": "Purchase state of the transaction.",
+          "complexTypes": [],
+          "type": "string | undefined"
         },
         {
           "name": "transactionReason",
@@ -346,11 +473,32 @@
           "type": "string | undefined"
         },
         {
-          "name": "expiresDate",
+          "name": "orderId",
           "tags": [],
-          "docs": "Expiration date for subscriptions (in milliseconds since epoch). iOS only.",
+          "docs": "Order ID associated with the transaction (Android).",
           "complexTypes": [],
-          "type": "number | undefined"
+          "type": "string | undefined"
+        },
+        {
+          "name": "purchaseToken",
+          "tags": [],
+          "docs": "Purchase token associated with the transaction (Android).",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "isAcknowledged",
+          "tags": [],
+          "docs": "Whether the purchase has been acknowledged (Android).",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "productType",
+          "tags": [],
+          "docs": "Product type (inapp or subs).",
+          "complexTypes": [],
+          "type": "string | undefined"
         },
         {
           "name": "type",
@@ -358,6 +506,27 @@
           "docs": "Product type (Auto-Renewable Subscription, Consumable, etc.). iOS only.",
           "complexTypes": [],
           "type": "string | undefined"
+        },
+        {
+          "name": "isTrialPeriod",
+          "tags": [],
+          "docs": "Whether the transaction is a trial period.",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "isInIntroPricePeriod",
+          "tags": [],
+          "docs": "Whether the transaction is in intro price period.",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "isInGracePeriod",
+          "tags": [],
+          "docs": "Whether the transaction is in grace period.",
+          "complexTypes": [],
+          "type": "boolean | undefined"
         }
       ]
     },
@@ -554,6 +723,22 @@
             "SubscriptionPeriod"
           ],
           "type": "SubscriptionPeriod"
+        }
+      ]
+    },
+    {
+      "name": "PluginListenerHandle",
+      "slug": "pluginlistenerhandle",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "remove",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "() => Promise<void>"
         }
       ]
     }

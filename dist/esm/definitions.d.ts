@@ -1,3 +1,4 @@
+import type { PluginListenerHandle } from "@capacitor/core";
 export declare enum ATTRIBUTION_NETWORK {
     APPLE_SEARCH_ADS = 0,
     ADJUST = 1,
@@ -119,6 +120,46 @@ export declare enum INTRO_ELIGIBILITY_STATUS {
      */
     INTRO_ELIGIBILITY_STATUS_ELIGIBLE = 2
 }
+/**
+ * Subscription period unit types.
+ * Maps to StoreKit 2 Product.SubscriptionPeriod.Unit
+ */
+export declare enum SUBSCRIPTION_PERIOD_UNIT {
+    /**
+     * Day unit
+     */
+    DAY = 0,
+    /**
+     * Week unit
+     */
+    WEEK = 1,
+    /**
+     * Month unit
+     */
+    MONTH = 2,
+    /**
+     * Year unit
+     */
+    YEAR = 3
+}
+/**
+ * Payment mode for subscription offers.
+ * Maps to StoreKit 2 Product.SubscriptionOffer.PaymentMode
+ */
+export declare enum OFFER_PAYMENT_MODE {
+    /**
+     * Pay as you go - price charged each billing period
+     */
+    PAY_AS_YOU_GO = 0,
+    /**
+     * Pay up front - total price charged at the beginning
+     */
+    PAY_UP_FRONT = 1,
+    /**
+     * Free trial - no charge during the offer period
+     */
+    FREE_TRIAL = 2
+}
 export interface Transaction {
     /**
      * The unique transaction identifier.
@@ -129,7 +170,15 @@ export interface Transaction {
      */
     readonly originalTransactionId?: string;
     /**
-     * Product identifier associated with the transaction.
+     * Receipt data for validation (iOS only - base64 encoded receipt)
+     */
+    readonly receipt?: string;
+    /**
+     * Product Id associated with the transaction.
+     */
+    readonly productIdentifier?: string;
+    /**
+     * Product identifier associated with the transaction. iOS only.
      */
     readonly productId?: string;
     /**
@@ -137,17 +186,37 @@ export interface Transaction {
      */
     readonly quantity?: number;
     /**
-     * Purchase date in milliseconds since epoch. iOS only.
+     * Purchase date (string in ISO 8601 format for Android, number in milliseconds since epoch for iOS).
      */
-    readonly purchaseDate?: number;
+    readonly purchaseDate?: string | number;
     /**
-     * Original purchase date in milliseconds since epoch. iOS only.
+     * Original purchase date (string in ISO 8601 format for Android, number in milliseconds since epoch for iOS).
      */
-    readonly originalPurchaseDate?: number;
+    readonly originalPurchaseDate?: string | number;
     /**
      * Transaction signed date in milliseconds since epoch. iOS only.
      */
     readonly signedDate?: number;
+    /**
+     * Expiration date of the transaction in ISO 8601 format (for subscriptions).
+     */
+    readonly expirationDate?: string;
+    /**
+     * Expiration date for subscriptions (in milliseconds since epoch). iOS only.
+     */
+    readonly expiresDate?: number;
+    /**
+     * Whether the transaction is still active/valid.
+     */
+    readonly isActive?: boolean;
+    /**
+     * Whether the subscription will be cancelled at the end of the billing cycle, or null if not cancelled. Only available on iOS.
+     */
+    readonly willCancel?: boolean | null;
+    /**
+     * Purchase state of the transaction.
+     */
+    readonly purchaseState?: string;
     /**
      * Transaction reason (PURCHASE, RENEWAL, etc.). iOS only.
      */
@@ -205,13 +274,37 @@ export interface Transaction {
      */
     readonly jwt?: string;
     /**
-     * Expiration date for subscriptions (in milliseconds since epoch). iOS only.
+     * Order ID associated with the transaction (Android).
      */
-    readonly expiresDate?: number;
+    readonly orderId?: string;
+    /**
+     * Purchase token associated with the transaction (Android).
+     */
+    readonly purchaseToken?: string;
+    /**
+     * Whether the purchase has been acknowledged (Android).
+     */
+    readonly isAcknowledged?: boolean;
+    /**
+     * Product type (inapp or subs).
+     */
+    readonly productType?: string;
     /**
      * Product type (Auto-Renewable Subscription, Consumable, etc.). iOS only.
      */
     readonly type?: string;
+    /**
+     * Whether the transaction is a trial period.
+     */
+    readonly isTrialPeriod?: boolean;
+    /**
+     * Whether the transaction is in intro price period.
+     */
+    readonly isInIntroPricePeriod?: boolean;
+    /**
+     * Whether the transaction is in grace period.
+     */
+    readonly isInGracePeriod?: boolean;
 }
 export interface SubscriptionPeriod {
     /**
@@ -326,12 +419,14 @@ export interface NativePurchasesPlugin {
      * @param options.productType - Only Android, the type of product, can be inapp or subs. Will use inapp by default.
      * @param options.planIdentifier - Only Android, the identifier of the plan you want to purchase, require for for subs.
      * @param options.quantity - Only iOS, the number of items you wish to purchase. Will use 1 by default.
+     * @param options.appAccountToken - Only iOS, UUID for the user's account. Used to link purchases to the user account for App Store Server Notifications.
      */
     purchaseProduct(options: {
         productIdentifier: string;
         planIdentifier?: string;
         productType?: PURCHASE_TYPE;
         quantity?: number;
+        appAccountToken?: string;
     }): Promise<Transaction>;
     /**
      * Gets the product info associated with a list of product identifiers.
@@ -379,6 +474,21 @@ export interface NativePurchasesPlugin {
         version: string;
     }>;
     /**
+     * Gets all the user's purchases (both in-app purchases and subscriptions).
+     * This method queries the platform's purchase history for the current user.
+     *
+     * @param options - Optional parameters for filtering purchases
+     * @param options.productType - Only Android, filter by product type (inapp or subs). If not specified, returns both types.
+     * @returns {Promise<{ purchases: Transaction[] }>} Promise that resolves with array of user's purchases
+     * @throws An error if the purchase query fails
+     * @since 7.2.0
+     */
+    getPurchases(options?: {
+        productType?: PURCHASE_TYPE;
+    }): Promise<{
+        purchases: Transaction[];
+    }>;
+    /**
      * Get the latest signed transaction JWT token. iOS only.
      *
      * @returns {Promise<{ jwt: string }>} Promise with the JWT token
@@ -387,5 +497,16 @@ export interface NativePurchasesPlugin {
     getLatestSignedTransaction(): Promise<{
         jwt: string;
     }>;
+    /**
+     * Opens the native subscription management interface for the user.
+     */
     showManageSubscriptions(): Promise<void>;
+    /**
+     * Listen for StoreKit transaction updates delivered by Apple's Transaction.updates.
+     * Fires on app launch if there are unfinished transactions, and for any updates afterward.
+     * iOS only.
+     */
+    addListener(eventName: "transactionUpdated", listenerFunc: (transaction: Transaction) => void): Promise<PluginListenerHandle>;
+    /** Remove all registered listeners */
+    removeAllListeners(): Promise<void>;
 }

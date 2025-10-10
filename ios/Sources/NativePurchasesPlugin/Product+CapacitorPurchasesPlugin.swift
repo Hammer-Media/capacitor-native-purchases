@@ -38,50 +38,14 @@ extension Product {
         
         // Add subscription period if available
         if let subscriptionPeriod = self.subscription?.subscriptionPeriod {
-            let unitString: String
-            switch subscriptionPeriod.unit {
-            case .day:
-                unitString = "day"
-            case .week:
-                unitString = "week"
-            case .month:
-                unitString = "month"
-            case .year:
-                unitString = "year"
-            }
-            
             productDict["subscriptionPeriod"] = [
                 "numberOfUnits": subscriptionPeriod.value,
-                "unit": unitString
+                "unit": mapSubscriptionPeriodUnit(subscriptionPeriod.unit)
             ]
         }
         
         // Add introductory price if available
         if let introOffer = self.subscription?.introductoryOffer {
-            let paymentModeString: String
-            switch introOffer.paymentMode {
-            case .payAsYouGo:
-                paymentModeString = "payAsYouGo"
-            case .payUpFront:
-                paymentModeString = "payUpFront"
-            case .freeTrial:
-                paymentModeString = "freeTrial"
-            default:
-                paymentModeString = "Unknown"
-            }
-            
-            let unitString: String
-            switch introOffer.period.unit {
-            case .day:
-                unitString = "day"
-            case .week:
-                unitString = "week"
-            case .month:
-                unitString = "month"
-            case .year:
-                unitString = "year"
-            }
-            
             productDict["introductoryPrice"] = [
                 "identifier": introOffer.id ?? "",
                 "type": introOffer.type.rawValue,
@@ -89,11 +53,11 @@ extension Product {
                 "priceString": introOffer.displayPrice,
                 "currencySymbol": currencySymbol,
                 "currencyCode": self.priceFormatStyle.currencyCode,
-                "paymentMode": paymentModeString,
+                "paymentMode": mapPaymentMode(introOffer.paymentMode),
                 "numberOfPeriods": introOffer.periodCount,
                 "subscriptionPeriod": [
                     "numberOfUnits": introOffer.period.value,
-                    "unit": unitString
+                    "unit": mapSubscriptionPeriodUnit(introOffer.period.unit)
                 ]
             ]
         } else {
@@ -104,30 +68,6 @@ extension Product {
         var discounts: [[String: Any]] = []
         if let promotionalOffers = self.subscription?.promotionalOffers {
             for offer in promotionalOffers {
-                let paymentModeString: String
-                switch offer.paymentMode {
-                case .payAsYouGo:
-                    paymentModeString = "payAsYouGo"
-                case .payUpFront:
-                    paymentModeString = "payUpFront"
-                case .freeTrial:
-                    paymentModeString = "freeTrial"
-                default:
-                    paymentModeString = "Unknown"
-                }
-                
-                let unitString: String
-                switch offer.period.unit {
-                case .day:
-                    unitString = "day"
-                case .week:
-                    unitString = "week"
-                case .month:
-                    unitString = "month"
-                case .year:
-                    unitString = "year"
-                }
-                
                 discounts.append([
                     "identifier": offer.id,
                     "type": offer.type.rawValue,
@@ -135,11 +75,11 @@ extension Product {
                     "priceString": offer.displayPrice,
                     "currencySymbol": currencySymbol,
                     "currencyCode": self.priceFormatStyle.currencyCode,
-                    "paymentMode": paymentModeString,
+                    "paymentMode": mapPaymentMode(offer.paymentMode),
                     "numberOfPeriods": offer.periodCount,
                     "subscriptionPeriod": [
                         "numberOfUnits": offer.period.value,
-                        "unit": unitString
+                        "unit": mapSubscriptionPeriodUnit(offer.period.unit)
                     ]
                 ])
             }
@@ -147,5 +87,32 @@ extension Product {
         productDict["discounts"] = discounts
         
         return productDict
+    }
+    
+    // MARK: - Helper Methods for Legacy Format Conversion
+    
+    /// Maps StoreKit 2 subscription period unit to legacy integer format
+    /// - Parameter unit: The StoreKit 2 period unit
+    /// - Returns: Integer representation (0=day, 1=week, 2=month, 3=year)
+    private func mapSubscriptionPeriodUnit(_ unit: Product.SubscriptionPeriod.Unit) -> Int {
+        switch unit {
+        case .day: return 0
+        case .week: return 1
+        case .month: return 2
+        case .year: return 3
+        @unknown default: return -1
+        }
+    }
+    
+    /// Maps StoreKit 2 payment mode to legacy integer format
+    /// - Parameter mode: The StoreKit 2 payment mode
+    /// - Returns: Integer representation (0=payAsYouGo, 1=payUpFront, 2=freeTrial)
+    private func mapPaymentMode(_ mode: Product.SubscriptionOffer.PaymentMode) -> Int {
+        switch mode {
+        case .payAsYouGo: return 0
+        case .payUpFront: return 1
+        case .freeTrial: return 2
+        @unknown default: return -1
+        }
     }
 }

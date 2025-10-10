@@ -26,6 +26,10 @@ export class NativePurchasesWeb extends WebPlugin {
         console.warn("Cannot get plugin version in web");
         return { version: "default" };
     }
+    async getPurchases(options) {
+        console.error("getPurchases only mocked in web " + options);
+        return { purchases: [] };
+    }
     async getLatestSignedTransaction() {
         console.error("getLatestSignedTransaction only mocked in web");
         return { jwt: "mock-jwt-token" };

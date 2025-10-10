@@ -1,5 +1,5 @@
 import { WebPlugin } from "@capacitor/core";
-import type { NativePurchasesPlugin, Product, Transaction } from "./definitions";
+import type { NativePurchasesPlugin, Product, PURCHASE_TYPE, Transaction } from "./definitions";
 export declare class NativePurchasesWeb extends WebPlugin implements NativePurchasesPlugin {
     restorePurchases(): Promise<{
         transactions: Transaction[];
@@ -24,6 +24,11 @@ export declare class NativePurchasesWeb extends WebPlugin implements NativePurch
     }>;
     getPluginVersion(): Promise<{
         version: string;
+    }>;
+    getPurchases(options?: {
+        productType?: PURCHASE_TYPE;
+    }): Promise<{
+        purchases: Transaction[];
     }>;
     getLatestSignedTransaction(): Promise<{
         jwt: string;

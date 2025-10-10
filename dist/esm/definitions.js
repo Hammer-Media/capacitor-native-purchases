@@ -125,4 +125,46 @@ export var INTRO_ELIGIBILITY_STATUS;
      */
     INTRO_ELIGIBILITY_STATUS[INTRO_ELIGIBILITY_STATUS["INTRO_ELIGIBILITY_STATUS_ELIGIBLE"] = 2] = "INTRO_ELIGIBILITY_STATUS_ELIGIBLE";
 })(INTRO_ELIGIBILITY_STATUS || (INTRO_ELIGIBILITY_STATUS = {}));
+/**
+ * Subscription period unit types.
+ * Maps to StoreKit 2 Product.SubscriptionPeriod.Unit
+ */
+export var SUBSCRIPTION_PERIOD_UNIT;
+(function (SUBSCRIPTION_PERIOD_UNIT) {
+    /**
+     * Day unit
+     */
+    SUBSCRIPTION_PERIOD_UNIT[SUBSCRIPTION_PERIOD_UNIT["DAY"] = 0] = "DAY";
+    /**
+     * Week unit
+     */
+    SUBSCRIPTION_PERIOD_UNIT[SUBSCRIPTION_PERIOD_UNIT["WEEK"] = 1] = "WEEK";
+    /**
+     * Month unit
+     */
+    SUBSCRIPTION_PERIOD_UNIT[SUBSCRIPTION_PERIOD_UNIT["MONTH"] = 2] = "MONTH";
+    /**
+     * Year unit
+     */
+    SUBSCRIPTION_PERIOD_UNIT[SUBSCRIPTION_PERIOD_UNIT["YEAR"] = 3] = "YEAR";
+})(SUBSCRIPTION_PERIOD_UNIT || (SUBSCRIPTION_PERIOD_UNIT = {}));
+/**
+ * Payment mode for subscription offers.
+ * Maps to StoreKit 2 Product.SubscriptionOffer.PaymentMode
+ */
+export var OFFER_PAYMENT_MODE;
+(function (OFFER_PAYMENT_MODE) {
+    /**
+     * Pay as you go - price charged each billing period
+     */
+    OFFER_PAYMENT_MODE[OFFER_PAYMENT_MODE["PAY_AS_YOU_GO"] = 0] = "PAY_AS_YOU_GO";
+    /**
+     * Pay up front - total price charged at the beginning
+     */
+    OFFER_PAYMENT_MODE[OFFER_PAYMENT_MODE["PAY_UP_FRONT"] = 1] = "PAY_UP_FRONT";
+    /**
+     * Free trial - no charge during the offer period
+     */
+    OFFER_PAYMENT_MODE[OFFER_PAYMENT_MODE["FREE_TRIAL"] = 2] = "FREE_TRIAL";
+})(OFFER_PAYMENT_MODE || (OFFER_PAYMENT_MODE = {}));
 //# sourceMappingURL=definitions.js.map

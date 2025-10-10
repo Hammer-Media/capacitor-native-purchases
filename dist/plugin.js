@@ -128,6 +128,48 @@ var capacitorNativePurchases = (function (exports, core) {
          */
         INTRO_ELIGIBILITY_STATUS[INTRO_ELIGIBILITY_STATUS["INTRO_ELIGIBILITY_STATUS_ELIGIBLE"] = 2] = "INTRO_ELIGIBILITY_STATUS_ELIGIBLE";
     })(exports.INTRO_ELIGIBILITY_STATUS || (exports.INTRO_ELIGIBILITY_STATUS = {}));
+    /**
+     * Subscription period unit types.
+     * Maps to StoreKit 2 Product.SubscriptionPeriod.Unit
+     */
+    exports.SUBSCRIPTION_PERIOD_UNIT = void 0;
+    (function (SUBSCRIPTION_PERIOD_UNIT) {
+        /**
+         * Day unit
+         */
+        SUBSCRIPTION_PERIOD_UNIT[SUBSCRIPTION_PERIOD_UNIT["DAY"] = 0] = "DAY";
+        /**
+         * Week unit
+         */
+        SUBSCRIPTION_PERIOD_UNIT[SUBSCRIPTION_PERIOD_UNIT["WEEK"] = 1] = "WEEK";
+        /**
+         * Month unit
+         */
+        SUBSCRIPTION_PERIOD_UNIT[SUBSCRIPTION_PERIOD_UNIT["MONTH"] = 2] = "MONTH";
+        /**
+         * Year unit
+         */
+        SUBSCRIPTION_PERIOD_UNIT[SUBSCRIPTION_PERIOD_UNIT["YEAR"] = 3] = "YEAR";
+    })(exports.SUBSCRIPTION_PERIOD_UNIT || (exports.SUBSCRIPTION_PERIOD_UNIT = {}));
+    /**
+     * Payment mode for subscription offers.
+     * Maps to StoreKit 2 Product.SubscriptionOffer.PaymentMode
+     */
+    exports.OFFER_PAYMENT_MODE = void 0;
+    (function (OFFER_PAYMENT_MODE) {
+        /**
+         * Pay as you go - price charged each billing period
+         */
+        OFFER_PAYMENT_MODE[OFFER_PAYMENT_MODE["PAY_AS_YOU_GO"] = 0] = "PAY_AS_YOU_GO";
+        /**
+         * Pay up front - total price charged at the beginning
+         */
+        OFFER_PAYMENT_MODE[OFFER_PAYMENT_MODE["PAY_UP_FRONT"] = 1] = "PAY_UP_FRONT";
+        /**
+         * Free trial - no charge during the offer period
+         */
+        OFFER_PAYMENT_MODE[OFFER_PAYMENT_MODE["FREE_TRIAL"] = 2] = "FREE_TRIAL";
+    })(exports.OFFER_PAYMENT_MODE || (exports.OFFER_PAYMENT_MODE = {}));
 
     const NativePurchases = core.registerPlugin("NativePurchases", {
         web: () => Promise.resolve().then(function () { return web; }).then((m) => new m.NativePurchasesWeb()),
@@ -159,6 +201,10 @@ var capacitorNativePurchases = (function (exports, core) {
         async getPluginVersion() {
             console.warn("Cannot get plugin version in web");
             return { version: "default" };
+        }
+        async getPurchases(options) {
+            console.error("getPurchases only mocked in web " + options);
+            return { purchases: [] };
         }
         async getLatestSignedTransaction() {
             console.error("getLatestSignedTransaction only mocked in web");

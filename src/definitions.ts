@@ -143,6 +143,48 @@ export enum INTRO_ELIGIBILITY_STATUS {
   INTRO_ELIGIBILITY_STATUS_ELIGIBLE,
 }
 
+/**
+ * Subscription period unit types.
+ * Maps to StoreKit 2 Product.SubscriptionPeriod.Unit
+ */
+export enum SUBSCRIPTION_PERIOD_UNIT {
+  /**
+   * Day unit
+   */
+  DAY = 0,
+  /**
+   * Week unit
+   */
+  WEEK = 1,
+  /**
+   * Month unit
+   */
+  MONTH = 2,
+  /**
+   * Year unit
+   */
+  YEAR = 3,
+}
+
+/**
+ * Payment mode for subscription offers.
+ * Maps to StoreKit 2 Product.SubscriptionOffer.PaymentMode
+ */
+export enum OFFER_PAYMENT_MODE {
+  /**
+   * Pay as you go - price charged each billing period
+   */
+  PAY_AS_YOU_GO = 0,
+  /**
+   * Pay up front - total price charged at the beginning
+   */
+  PAY_UP_FRONT = 1,
+  /**
+   * Free trial - no charge during the offer period
+   */
+  FREE_TRIAL = 2,
+}
+
 export interface Transaction {
   /**
    * The unique transaction identifier.
