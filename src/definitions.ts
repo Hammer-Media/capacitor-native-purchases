@@ -130,7 +130,7 @@ export enum PACKAGE_TYPE {
 
 export enum INTRO_ELIGIBILITY_STATUS {
   /**
-   * RevenueCat doesn't have enough information to determine eligibility.
+   * doesn't have enough information to determine eligibility.
    */
   INTRO_ELIGIBILITY_STATUS_UNKNOWN = 0,
   /**
@@ -145,7 +145,7 @@ export enum INTRO_ELIGIBILITY_STATUS {
 
 export interface Transaction {
   /**
-   * RevenueCat Id associated to the transaction.
+   * Id associated to the transaction.
    */
   readonly transactionId: string;
   /**
