@@ -2,6 +2,7 @@ package ee.forgr.nativepurchases;
 
 import android.util.Log;
 import androidx.annotation.NonNull;
+import com.android.billingclient.api.AccountIdentifiers;
 import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
 import com.android.billingclient.api.BillingClient;
@@ -17,7 +18,6 @@ import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.QueryProductDetailsResult;
 import com.android.billingclient.api.QueryPurchasesParams;
-import com.android.billingclient.api.AccountIdentifiers;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -392,10 +392,10 @@ public class NativePurchasesPlugin extends Plugin {
     String productType = call.getString("productType", "inapp");
     Number quantity = call.getInt("quantity", 1);
     String appAccountToken = call.getString("appAccountToken");
-    final String accountIdentifier =
-      appAccountToken != null && !appAccountToken.isEmpty()
-        ? appAccountToken
-        : null;
+    final String accountIdentifier = appAccountToken != null &&
+      !appAccountToken.isEmpty()
+      ? appAccountToken
+      : null;
 
     Log.d(TAG, "Product identifier: " + productIdentifier);
     Log.d(TAG, "Plan identifier: " + planIdentifier);
@@ -540,9 +540,9 @@ public class NativePurchasesPlugin extends Plugin {
               }
               productDetailsParamsList.add(productDetailsParams.build());
             }
-            BillingFlowParams.Builder billingFlowBuilder = BillingFlowParams
-              .newBuilder()
-              .setProductDetailsParamsList(productDetailsParamsList);
+            BillingFlowParams.Builder billingFlowBuilder =
+              BillingFlowParams.newBuilder()
+                .setProductDetailsParamsList(productDetailsParamsList);
             if (accountIdentifier != null && !accountIdentifier.isEmpty()) {
               billingFlowBuilder.setObfuscatedAccountId(accountIdentifier);
             }
@@ -945,16 +945,15 @@ public class NativePurchasesPlugin extends Plugin {
     String productType = call.getString("productType");
     Log.d(TAG, "Product type filter: " + productType);
     String appAccountToken = call.getString("appAccountToken");
-    final String accountFilter =
-      appAccountToken != null && !appAccountToken.isEmpty()
-        ? appAccountToken
-        : null;
+    final String accountFilter = appAccountToken != null &&
+      !appAccountToken.isEmpty()
+      ? appAccountToken
+      : null;
     final boolean hasAccountFilter =
       accountFilter != null && !accountFilter.isEmpty();
     Log.d(
       TAG,
-      "Account filter provided: " +
-      (hasAccountFilter ? "[REDACTED]" : "none")
+      "Account filter provided: " + (hasAccountFilter ? "[REDACTED]" : "none")
     );
 
     this.initBillingClient(null);
@@ -987,7 +986,8 @@ public class NativePurchasesPlugin extends Plugin {
                   TAG,
                   "Processing in-app purchase: " + purchase.getOrderId()
                 );
-                AccountIdentifiers accountIdentifiers = purchase.getAccountIdentifiers();
+                AccountIdentifiers accountIdentifiers =
+                  purchase.getAccountIdentifiers();
                 String purchaseAccountId = accountIdentifiers != null
                   ? accountIdentifiers.getObfuscatedAccountId()
                   : null;
@@ -1070,7 +1070,8 @@ public class NativePurchasesPlugin extends Plugin {
                   TAG,
                   "Processing subscription purchase: " + purchase.getOrderId()
                 );
-                AccountIdentifiers accountIdentifiers = purchase.getAccountIdentifiers();
+                AccountIdentifiers accountIdentifiers =
+                  purchase.getAccountIdentifiers();
                 String purchaseAccountId = accountIdentifiers != null
                   ? accountIdentifiers.getObfuscatedAccountId()
                   : null;
