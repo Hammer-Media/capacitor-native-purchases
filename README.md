@@ -884,7 +884,7 @@ Remove all registered listeners
 
 | Prop                       | Type                         | Description                                                                                                                  |
 | -------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| **`transactionId`**        | <code>string</code>          | RevenueCat Id associated to the transaction.                                                                                 |
+| **`transactionId`**        | <code>string</code>          | Id associated to the transaction.                                                                                            |
 | **`receipt`**              | <code>string</code>          | Receipt data for validation (iOS only - base64 encoded receipt)                                                              |
 | **`productIdentifier`**    | <code>string</code>          | <a href="#product">Product</a> Id associated with the transaction.                                                           |
 | **`purchaseDate`**         | <code>string</code>          | Purchase date of the transaction in ISO 8601 format.                                                                         |
