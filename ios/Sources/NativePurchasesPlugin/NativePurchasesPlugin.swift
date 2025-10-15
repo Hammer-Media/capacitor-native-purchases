@@ -27,7 +27,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
         call.resolve(["version": self.PLUGIN_VERSION])
     }
 
-    public override func load() {
+    override public func load() {
         super.load()
         // Start listening to StoreKit transaction updates as early as possible
         if #available(iOS 15.0, *) {
@@ -51,7 +51,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
         let task = Task.detached { [weak self] in
             // Create a single ISO8601DateFormatter once per Task to avoid repeated allocations
             let dateFormatter = ISO8601DateFormatter()
-            
+
             for await result in Transaction.updates {
                 guard !Task.isCancelled else { break }
                 do {
@@ -62,7 +62,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
 
                     // Build payload similar to purchase response
                     var payload: [String: Any] = ["transactionId": String(transaction.id)]
-                    
+
                     // Always include willCancel key with NSNull() default
                     payload["willCancel"] = NSNull()
 
@@ -91,7 +91,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                             switch renewalInfo {
                             case .verified(let value):
                                 payload["willCancel"] = !value.willAutoRenew
-                            case .unverified(_, _):
+                            case .unverified:
                                 // willCancel remains NSNull() for unverified renewalInfo
                                 break
                             }
@@ -175,7 +175,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                             let tokenString = token.uuidString
                             response["appAccountToken"] = tokenString
                         }
-                        
+
                         // Add subscription-specific information
                         if transaction.productType == .autoRenewable {
                             response["originalPurchaseDate"] = ISO8601DateFormatter().string(from: transaction.originalPurchaseDate)
@@ -185,7 +185,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                 response["isActive"] = isActive
                             }
                         }
-                        
+
                         let subscriptionStatus = await transaction.subscriptionStatus
                         if let subscriptionStatus = subscriptionStatus {
                             // You can use 'state' here if needed
@@ -193,21 +193,19 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                             if state == .subscribed {
                                 // Use Objective-C reflection to access advancedCommerceInfo
                                 let renewalInfo = subscriptionStatus.renewalInfo
-                                
-                                switch (renewalInfo) {
+
+                                switch renewalInfo {
                                 case .verified(let value):
-//                                            if #available(iOS 18.4, *) {
-//                                                // This should work but may need runtime access
-//                                                let advancedInfo = value.advancedCommerceInfo
-//                                                print("Advanced commerce info: \(advancedInfo)")
-//                                            }
-//                                            print("[InAppPurchase] Subscription renewalInfo verified.")
+                                    //                                            if #available(iOS 18.4, *) {
+                                    //                                                // This should work but may need runtime access
+                                    //                                                let advancedInfo = value.advancedCommerceInfo
+                                    //                                                print("Advanced commerce info: \(advancedInfo)")
+                                    //                                            }
+                                    //                                            print("[InAppPurchase] Subscription renewalInfo verified.")
                                     response["willCancel"] = !value.willAutoRenew
-                                    break;
-                                case .unverified(_, _):
+                                    case .unverified:
                                     print("[InAppPurchase] Subscription renewalInfo not verified.")
                                     response["willCancel"] = NSNull()
-                                    break;
                                 }
                             }
                         }
@@ -354,7 +352,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                 if let token = transactionAccountToken {
                                     purchaseData["appAccountToken"] = token
                                 }
-                                
+
                                 // Add subscription-specific information
                                 if transaction.productType == .autoRenewable {
                                     purchaseData["originalPurchaseDate"] = ISO8601DateFormatter().string(from: transaction.originalPurchaseDate)
@@ -364,7 +362,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                         purchaseData["isActive"] = isActive
                                     }
                                 }
-                                
+
                                 let subscriptionStatus = await transaction.subscriptionStatus
                                 if let subscriptionStatus = subscriptionStatus {
                                     // You can use 'state' here if needed
@@ -372,21 +370,19 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                     if state == .subscribed {
                                         // Use Objective-C reflection to access advancedCommerceInfo
                                         let renewalInfo = subscriptionStatus.renewalInfo
-                                        
-                                        switch (renewalInfo) {
+
+                                        switch renewalInfo {
                                         case .verified(let value):
-//                                            if #available(iOS 18.4, *) {
-//                                                // This should work but may need runtime access
-//                                                let advancedInfo = value.advancedCommerceInfo
-//                                                print("Advanced commerce info: \(advancedInfo)")
-//                                            }
-//                                            print("[InAppPurchase] Subscription renewalInfo verified.")
+                                            //                                            if #available(iOS 18.4, *) {
+                                            //                                                // This should work but may need runtime access
+                                            //                                                let advancedInfo = value.advancedCommerceInfo
+                                            //                                                print("Advanced commerce info: \(advancedInfo)")
+                                            //                                            }
+                                            //                                            print("[InAppPurchase] Subscription renewalInfo verified.")
                                             purchaseData["willCancel"] = !value.willAutoRenew
-                                            break;
-                                        case .unverified(_, _):
+                                            case .unverified:
                                             print("[InAppPurchase] Subscription renewalInfo not verified.")
                                             purchaseData["willCancel"] = NSNull()
-                                            break;
                                         }
                                     }
                                 }
@@ -400,7 +396,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                             if case .verified(let transaction) = result {
                                 let transactionIdString = String(transaction.id)
                                 let transactionAccountToken = transaction.appAccountToken?.uuidString
-                                
+
                                 if let filter = appAccountTokenFilter {
                                     guard let token = transactionAccountToken, token == filter else {
                                         continue
@@ -433,7 +429,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                     if let token = transactionAccountToken {
                                         purchaseData["appAccountToken"] = token
                                     }
-                                    
+
                                     // Add subscription-specific information
                                     if transaction.productType == .autoRenewable {
                                         purchaseData["originalPurchaseDate"] = ISO8601DateFormatter().string(from: transaction.originalPurchaseDate)
@@ -443,7 +439,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                             purchaseData["isActive"] = isActive
                                         }
                                     }
-                                    
+
                                     let subscriptionStatus = await transaction.subscriptionStatus
                                     if let subscriptionStatus = subscriptionStatus {
                                         // You can use 'state' here if needed
@@ -451,21 +447,19 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                         if state == .subscribed {
                                             // Use Objective-C reflection to access advancedCommerceInfo
                                             let renewalInfo = subscriptionStatus.renewalInfo
-                                            
-                                            switch (renewalInfo) {
+
+                                            switch renewalInfo {
                                             case .verified(let value):
-    //                                            if #available(iOS 18.4, *) {
-    //                                                // This should work but may need runtime access
-    //                                                let advancedInfo = value.advancedCommerceInfo
-    //                                                print("Advanced commerce info: \(advancedInfo)")
-    //                                            }
-    //                                            print("[InAppPurchase] Subscription renewalInfo verified.")
+                                                //                                            if #available(iOS 18.4, *) {
+                                                //                                                // This should work but may need runtime access
+                                                //                                                let advancedInfo = value.advancedCommerceInfo
+                                                //                                                print("Advanced commerce info: \(advancedInfo)")
+                                                //                                            }
+                                                //                                            print("[InAppPurchase] Subscription renewalInfo verified.")
                                                 purchaseData["willCancel"] = !value.willAutoRenew
-                                                break;
-                                            case .unverified(_, _):
+                                                case .unverified:
                                                 print("[InAppPurchase] Subscription renewalInfo not verified.")
                                                 purchaseData["willCancel"] = NSNull()
-                                                break;
                                             }
                                         }
                                     }

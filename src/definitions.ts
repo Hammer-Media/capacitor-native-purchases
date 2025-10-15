@@ -1,4 +1,4 @@
-import type { PluginListenerHandle } from "@capacitor/core";
+import type { PluginListenerHandle } from '@capacitor/core';
 
 export enum ATTRIBUTION_NETWORK {
   APPLE_SEARCH_ADS = 0,
@@ -13,12 +13,12 @@ export enum PURCHASE_TYPE {
   /**
    * A type of SKU for in-app products.
    */
-  INAPP = "inapp",
+  INAPP = 'inapp',
 
   /**
    * A type of SKU for subscriptions.
    */
-  SUBS = "subs",
+  SUBS = 'subs',
 }
 
 /**
@@ -85,47 +85,47 @@ export enum PACKAGE_TYPE {
   /**
    * A package that was defined with a custom identifier.
    */
-  UNKNOWN = "UNKNOWN",
+  UNKNOWN = 'UNKNOWN',
 
   /**
    * A package that was defined with a custom identifier.
    */
-  CUSTOM = "CUSTOM",
+  CUSTOM = 'CUSTOM',
 
   /**
    * A package configured with the predefined lifetime identifier.
    */
-  LIFETIME = "LIFETIME",
+  LIFETIME = 'LIFETIME',
 
   /**
    * A package configured with the predefined annual identifier.
    */
-  ANNUAL = "ANNUAL",
+  ANNUAL = 'ANNUAL',
 
   /**
    * A package configured with the predefined six month identifier.
    */
-  SIX_MONTH = "SIX_MONTH",
+  SIX_MONTH = 'SIX_MONTH',
 
   /**
    * A package configured with the predefined three month identifier.
    */
-  THREE_MONTH = "THREE_MONTH",
+  THREE_MONTH = 'THREE_MONTH',
 
   /**
    * A package configured with the predefined two month identifier.
    */
-  TWO_MONTH = "TWO_MONTH",
+  TWO_MONTH = 'TWO_MONTH',
 
   /**
    * A package configured with the predefined monthly identifier.
    */
-  MONTHLY = "MONTHLY",
+  MONTHLY = 'MONTHLY',
 
   /**
    * A package configured with the predefined weekly identifier.
    */
-  WEEKLY = "WEEKLY",
+  WEEKLY = 'WEEKLY',
 }
 
 export enum INTRO_ELIGIBILITY_STATUS {
@@ -349,10 +349,7 @@ export interface NativePurchasesPlugin {
    * @param options.productType - Only Android, the type of product, can be inapp or subs. Will use inapp by default.
    * @returns - The requested product info
    */
-  getProducts(options: {
-    productIdentifiers: string[];
-    productType?: PURCHASE_TYPE;
-  }): Promise<{ products: Product[] }>;
+  getProducts(options: { productIdentifiers: string[]; productType?: PURCHASE_TYPE }): Promise<{ products: Product[] }>;
 
   /**
    * Gets the product info for a single product identifier.
@@ -362,10 +359,7 @@ export interface NativePurchasesPlugin {
    * @param options.productType - Only Android, the type of product, can be inapp or subs. Will use inapp by default.
    * @returns - The requested product info
    */
-  getProduct(options: {
-    productIdentifier: string;
-    productType?: PURCHASE_TYPE;
-  }): Promise<{ product: Product }>;
+  getProduct(options: { productIdentifier: string; productType?: PURCHASE_TYPE }): Promise<{ product: Product }>;
 
   /**
    * Check if billing is supported for the current device.
@@ -403,7 +397,7 @@ export interface NativePurchasesPlugin {
    * iOS only.
    */
   addListener(
-    eventName: "transactionUpdated",
+    eventName: 'transactionUpdated',
     listenerFunc: (transaction: Transaction) => void,
   ): Promise<PluginListenerHandle>;
 
