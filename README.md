@@ -833,10 +833,9 @@ getPurchases(options?: { productType?: PURCHASE_TYPE | undefined; appAccountToke
 
 Gets all the user's purchases (both in-app purchases and subscriptions).
 This method queries the platform's purchase history for the current user.
-Pass `appAccountToken` to limit the results to purchases created with that account identifier (on Android this maps to Google Play's ObfuscatedAccountId).
 
-| Param         | Type                                                                                                               | Description                                   |
-| ------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
+| Param         | Type                                                                                                 | Description                                   |
+| ------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------------------- |
 | **`options`** | <code>{ productType?: <a href="#purchase_type">PURCHASE_TYPE</a>; appAccountToken?: string; }</code> | - Optional parameters for filtering purchases |
 
 **Returns:** <code>Promise&lt;{ purchases: Transaction[]; }&gt;</code>
@@ -886,6 +885,7 @@ Remove all registered listeners
 | -------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | **`transactionId`**        | <code>string</code>          | Id associated to the transaction.                                                                                            |
 | **`receipt`**              | <code>string</code>          | Receipt data for validation (iOS only - base64 encoded receipt)                                                              |
+| **`appAccountToken`**      | <code>string \| null</code>  | Account token provided during purchase. Works on both platforms and maps to Google Play's ObfuscatedAccountId on Android.    |
 | **`productIdentifier`**    | <code>string</code>          | <a href="#product">Product</a> Id associated with the transaction.                                                           |
 | **`purchaseDate`**         | <code>string</code>          | Purchase date of the transaction in ISO 8601 format.                                                                         |
 | **`originalPurchaseDate`** | <code>string</code>          | Original purchase date of the transaction in ISO 8601 format (for subscriptions).                                            |
