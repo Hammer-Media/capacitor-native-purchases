@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.8.5](https://github.com/Cap-go/capacitor-native-purchases/compare/7.8.4...7.8.5) (2025-10-15)
+
+
+### Bug Fixes
+
+* **deps:** update dependency androidx.appcompat:appcompat to v1.7.1 ([#110](https://github.com/Cap-go/capacitor-native-purchases/issues/110)) ([acd6d59](https://github.com/Cap-go/capacitor-native-purchases/commit/acd6d598ec685e43d548a8b17664f7e989e6bf4f))
+
 ## [7.8.4](https://github.com/Cap-go/capacitor-native-purchases/compare/7.8.3...7.8.4) (2025-10-15)
 
 
