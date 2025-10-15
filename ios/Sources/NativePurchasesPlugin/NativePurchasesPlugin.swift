@@ -203,7 +203,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                     //                                            }
                                     //                                            print("[InAppPurchase] Subscription renewalInfo verified.")
                                     response["willCancel"] = !value.willAutoRenew
-                                    case .unverified:
+                                case .unverified:
                                     print("[InAppPurchase] Subscription renewalInfo not verified.")
                                     response["willCancel"] = NSNull()
                                 }
@@ -380,7 +380,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                             //                                            }
                                             //                                            print("[InAppPurchase] Subscription renewalInfo verified.")
                                             purchaseData["willCancel"] = !value.willAutoRenew
-                                            case .unverified:
+                                        case .unverified:
                                             print("[InAppPurchase] Subscription renewalInfo not verified.")
                                             purchaseData["willCancel"] = NSNull()
                                         }
@@ -457,7 +457,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                                 //                                            }
                                                 //                                            print("[InAppPurchase] Subscription renewalInfo verified.")
                                                 purchaseData["willCancel"] = !value.willAutoRenew
-                                                case .unverified:
+                                            case .unverified:
                                                 print("[InAppPurchase] Subscription renewalInfo not verified.")
                                                 purchaseData["willCancel"] = NSNull()
                                             }
