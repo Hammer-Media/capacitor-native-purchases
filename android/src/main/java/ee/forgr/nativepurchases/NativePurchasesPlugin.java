@@ -17,6 +17,7 @@ import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.QueryProductDetailsResult;
 import com.android.billingclient.api.QueryPurchasesParams;
+import com.android.billingclient.api.AccountIdentifiers;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -133,6 +134,15 @@ public class NativePurchasesPlugin extends Plugin {
       // Grant entitlement to the user, then acknowledge the purchase
       //     if sub then acknowledgePurchase
       //      if one time then consumePurchase
+      AccountIdentifiers accountIdentifiers = purchase.getAccountIdentifiers();
+      String purchaseAccountId = accountIdentifiers != null
+        ? accountIdentifiers.getObfuscatedAccountId()
+        : null;
+      Log.d(
+        TAG,
+        "Purchase account identifier present: " +
+        (purchaseAccountId != null ? "[REDACTED]" : "none")
+      );
       if (purchase.isAcknowledged()) {
         Log.d(TAG, "Purchase already acknowledged, consuming...");
         ConsumeParams consumeParams = ConsumeParams.newBuilder()
@@ -165,6 +175,7 @@ public class NativePurchasesPlugin extends Plugin {
       ret.put("purchaseToken", purchase.getPurchaseToken());
       ret.put("isAcknowledged", purchase.isAcknowledged());
       ret.put("purchaseState", String.valueOf(purchase.getPurchaseState()));
+      ret.put("appAccountToken", purchaseAccountId);
 
       // Add cancellation information - ALWAYS set willCancel
       // Note: Android doesn't provide direct cancellation information in the Purchase object
@@ -380,11 +391,21 @@ public class NativePurchasesPlugin extends Plugin {
     String planIdentifier = call.getString("planIdentifier");
     String productType = call.getString("productType", "inapp");
     Number quantity = call.getInt("quantity", 1);
+    String appAccountToken = call.getString("appAccountToken");
+    final String accountIdentifier =
+      appAccountToken != null && !appAccountToken.isEmpty()
+        ? appAccountToken
+        : null;
 
     Log.d(TAG, "Product identifier: " + productIdentifier);
     Log.d(TAG, "Plan identifier: " + planIdentifier);
     Log.d(TAG, "Product type: " + productType);
     Log.d(TAG, "Quantity: " + quantity);
+    Log.d(
+      TAG,
+      "Account identifier provided: " +
+      (accountIdentifier != null ? "[REDACTED]" : "none")
+    );
 
     // cannot use quantity, because it's done in native modal
     Log.d("CapacitorPurchases", "purchaseProduct: " + productIdentifier);
@@ -519,9 +540,13 @@ public class NativePurchasesPlugin extends Plugin {
               }
               productDetailsParamsList.add(productDetailsParams.build());
             }
-            BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
-              .setProductDetailsParamsList(productDetailsParamsList)
-              .build();
+            BillingFlowParams.Builder billingFlowBuilder = BillingFlowParams
+              .newBuilder()
+              .setProductDetailsParamsList(productDetailsParamsList);
+            if (accountIdentifier != null && !accountIdentifier.isEmpty()) {
+              billingFlowBuilder.setObfuscatedAccountId(accountIdentifier);
+            }
+            BillingFlowParams billingFlowParams = billingFlowBuilder.build();
             // Launch the billing flow
             Log.d(TAG, "Launching billing flow");
             BillingResult billingResult2 = billingClient.launchBillingFlow(
@@ -919,6 +944,18 @@ public class NativePurchasesPlugin extends Plugin {
     Log.d(TAG, "getPurchases() called");
     String productType = call.getString("productType");
     Log.d(TAG, "Product type filter: " + productType);
+    String appAccountToken = call.getString("appAccountToken");
+    final String accountFilter =
+      appAccountToken != null && !appAccountToken.isEmpty()
+        ? appAccountToken
+        : null;
+    final boolean hasAccountFilter =
+      accountFilter != null && !accountFilter.isEmpty();
+    Log.d(
+      TAG,
+      "Account filter provided: " +
+      (hasAccountFilter ? "[REDACTED]" : "none")
+    );
 
     this.initBillingClient(null);
 
@@ -950,6 +987,22 @@ public class NativePurchasesPlugin extends Plugin {
                   TAG,
                   "Processing in-app purchase: " + purchase.getOrderId()
                 );
+                AccountIdentifiers accountIdentifiers = purchase.getAccountIdentifiers();
+                String purchaseAccountId = accountIdentifiers != null
+                  ? accountIdentifiers.getObfuscatedAccountId()
+                  : null;
+                if (hasAccountFilter) {
+                  if (
+                    purchaseAccountId == null ||
+                    !purchaseAccountId.equals(accountFilter)
+                  ) {
+                    Log.d(
+                      TAG,
+                      "Skipping in-app purchase due to account filter mismatch"
+                    );
+                    continue;
+                  }
+                }
                 JSObject purchaseData = new JSObject();
                 purchaseData.put("transactionId", purchase.getPurchaseToken());
                 purchaseData.put(
@@ -972,6 +1025,7 @@ public class NativePurchasesPlugin extends Plugin {
                   "purchaseState",
                   String.valueOf(purchase.getPurchaseState())
                 );
+                purchaseData.put("appAccountToken", purchaseAccountId);
                 // Add cancellation information - ALWAYS set willCancel
                 // Note: Android doesn't provide direct cancellation information in the Purchase object
                 purchaseData.put("willCancel", null); // Default to null, would need API call to determine actual cancellation date
@@ -1016,6 +1070,22 @@ public class NativePurchasesPlugin extends Plugin {
                   TAG,
                   "Processing subscription purchase: " + purchase.getOrderId()
                 );
+                AccountIdentifiers accountIdentifiers = purchase.getAccountIdentifiers();
+                String purchaseAccountId = accountIdentifiers != null
+                  ? accountIdentifiers.getObfuscatedAccountId()
+                  : null;
+                if (hasAccountFilter) {
+                  if (
+                    purchaseAccountId == null ||
+                    !purchaseAccountId.equals(accountFilter)
+                  ) {
+                    Log.d(
+                      TAG,
+                      "Skipping subscription purchase due to account filter mismatch"
+                    );
+                    continue;
+                  }
+                }
                 JSObject purchaseData = new JSObject();
                 purchaseData.put("transactionId", purchase.getPurchaseToken());
                 purchaseData.put(
@@ -1038,6 +1108,7 @@ public class NativePurchasesPlugin extends Plugin {
                   "purchaseState",
                   String.valueOf(purchase.getPurchaseState())
                 );
+                purchaseData.put("appAccountToken", purchaseAccountId);
                 // Add cancellation information - ALWAYS set willCancel
                 // Note: Android doesn't provide direct cancellation information in the Purchase object
                 purchaseData.put("willCancel", null); // Default to null, would need API call to determine actual cancellation date

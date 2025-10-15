@@ -153,6 +153,10 @@ export interface Transaction {
    */
   readonly receipt?: string;
   /**
+   * Account token provided during purchase. Works on both platforms and maps to Google Play's ObfuscatedAccountId on Android.
+   */
+  readonly appAccountToken?: string | null;
+  /**
    * Product Id associated with the transaction.
    */
   readonly productIdentifier: string;
@@ -327,7 +331,7 @@ export interface NativePurchasesPlugin {
    * @param options.productType - Only Android, the type of product, can be inapp or subs. Will use inapp by default.
    * @param options.planIdentifier - Only Android, the identifier of the plan you want to purchase, require for for subs.
    * @param options.quantity - Only iOS, the number of items you wish to purchase. Will use 1 by default.
-   * @param options.appAccountToken - Only iOS, UUID for the user's account. Used to link purchases to the user account for App Store Server Notifications.
+   * @param options.appAccountToken - Optional. UUID for the user's account. Works on both platforms and maps to Google Play's ObfuscatedAccountId on Android.
    */
   purchaseProduct(options: {
     productIdentifier: string;
@@ -383,12 +387,14 @@ export interface NativePurchasesPlugin {
    *
    * @param options - Optional parameters for filtering purchases
    * @param options.productType - Only Android, filter by product type (inapp or subs). If not specified, returns both types.
+   * @param options.appAccountToken - Optional filter to restrict results to purchases that used the provided account token (works on both platforms and maps to Google Play's ObfuscatedAccountId on Android).
    * @returns {Promise<{ purchases: Transaction[] }>} Promise that resolves with array of user's purchases
    * @throws An error if the purchase query fails
    * @since 7.2.0
    */
   getPurchases(options?: {
     productType?: PURCHASE_TYPE;
+    appAccountToken?: string;
   }): Promise<{ purchases: Transaction[] }>;
 
   /**

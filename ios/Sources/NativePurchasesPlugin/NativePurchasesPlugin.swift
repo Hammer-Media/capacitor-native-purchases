@@ -130,7 +130,6 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
             let productIdentifier = call.getString("productIdentifier", "")
             let quantity = call.getInt("quantity", 1)
             let appAccountToken = call.getString("appAccountToken")
-
             if productIdentifier.isEmpty {
                 call.reject("productIdentifier is Empty, give an id")
                 return
@@ -172,6 +171,10 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                         response["productIdentifier"] = transaction.productID
                         response["purchaseDate"] = ISO8601DateFormatter().string(from: transaction.purchaseDate)
                         response["productType"] = transaction.productType == .autoRenewable ? "subs" : "inapp"
+                        if let token = transaction.appAccountToken {
+                            let tokenString = token.uuidString
+                            response["appAccountToken"] = tokenString
+                        }
                         
                         // Add subscription-specific information
                         if transaction.productType == .autoRenewable {
@@ -317,6 +320,7 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func getPurchases(_ call: CAPPluginCall) {
+        let appAccountTokenFilter = call.getString("appAccountToken")
         if #available(iOS 15.0, *) {
             print("getPurchases")
             DispatchQueue.global().async {
@@ -327,6 +331,12 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                         // Get all current entitlements (active subscriptions)
                         for await result in Transaction.currentEntitlements {
                             if case .verified(let transaction) = result {
+                                let transactionAccountToken = transaction.appAccountToken?.uuidString
+                                if let filter = appAccountTokenFilter {
+                                    guard let token = transactionAccountToken, token == filter else {
+                                        continue
+                                    }
+                                }
                                 var purchaseData: [String: Any] = ["transactionId": String(transaction.id)]
 
                                 // Get receipt data
@@ -341,6 +351,9 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                 purchaseData["productIdentifier"] = transaction.productID
                                 purchaseData["purchaseDate"] = ISO8601DateFormatter().string(from: transaction.purchaseDate)
                                 purchaseData["productType"] = transaction.productType == .autoRenewable ? "subs" : "inapp"
+                                if let token = transactionAccountToken {
+                                    purchaseData["appAccountToken"] = token
+                                }
                                 
                                 // Add subscription-specific information
                                 if transaction.productType == .autoRenewable {
@@ -386,6 +399,13 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                         for await result in Transaction.all {
                             if case .verified(let transaction) = result {
                                 let transactionIdString = String(transaction.id)
+                                let transactionAccountToken = transaction.appAccountToken?.uuidString
+                                
+                                if let filter = appAccountTokenFilter {
+                                    guard let token = transactionAccountToken, token == filter else {
+                                        continue
+                                    }
+                                }
 
                                 // Check if we already have this transaction
                                 let alreadyExists = allPurchases.contains { purchase in
@@ -410,6 +430,9 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                                     purchaseData["productIdentifier"] = transaction.productID
                                     purchaseData["purchaseDate"] = ISO8601DateFormatter().string(from: transaction.purchaseDate)
                                     purchaseData["productType"] = transaction.productType == .autoRenewable ? "subs" : "inapp"
+                                    if let token = transactionAccountToken {
+                                        purchaseData["appAccountToken"] = token
+                                    }
                                     
                                     // Add subscription-specific information
                                     if transaction.productType == .autoRenewable {

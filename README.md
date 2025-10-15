@@ -401,7 +401,7 @@ const buyInAppProduct = async () => {
       productIdentifier: 'com.yourapp.premium_features',
       productType: PURCHASE_TYPE.INAPP,
       quantity: 1,
-      appAccountToken: userUUID // Optional: iOS only - for linking purchases to user accounts
+      appAccountToken: userUUID // Optional: iOS & Android - links purchases to a user (maps to Google Play ObfuscatedAccountId)
     });
 
     alert('Purchase successful! Transaction ID: ' + result.transactionId);
@@ -443,7 +443,7 @@ const buySubscription = async () => {
       planIdentifier: 'monthly-plan',           // REQUIRED for Android subscriptions
       productType: PURCHASE_TYPE.SUBS,          // REQUIRED for subscriptions
       quantity: 1,
-      appAccountToken: userUUID                 // Optional: iOS only - for linking purchases to user accounts
+      appAccountToken: userUUID                 // Optional: iOS & Android - links purchases to a user (maps to Google Play ObfuscatedAccountId)
     });
 
     alert('Subscription successful! Transaction ID: ' + result.transactionId);
@@ -828,15 +828,16 @@ Get the native Capacitor plugin version
 ### getPurchases(...)
 
 ```typescript
-getPurchases(options?: { productType?: PURCHASE_TYPE | undefined; } | undefined) => Promise<{ purchases: Transaction[]; }>
+getPurchases(options?: { productType?: PURCHASE_TYPE | undefined; appAccountToken?: string | undefined; } | undefined) => Promise<{ purchases: Transaction[]; }>
 ```
 
 Gets all the user's purchases (both in-app purchases and subscriptions).
 This method queries the platform's purchase history for the current user.
+Pass `appAccountToken` to limit the results to purchases created with that account identifier (on Android this maps to Google Play's ObfuscatedAccountId).
 
-| Param         | Type                                                                       | Description                                   |
-| ------------- | -------------------------------------------------------------------------- | --------------------------------------------- |
-| **`options`** | <code>{ productType?: <a href="#purchase_type">PURCHASE_TYPE</a>; }</code> | - Optional parameters for filtering purchases |
+| Param         | Type                                                                                                               | Description                                   |
+| ------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
+| **`options`** | <code>{ productType?: <a href="#purchase_type">PURCHASE_TYPE</a>; appAccountToken?: string; }</code> | - Optional parameters for filtering purchases |
 
 **Returns:** <code>Promise&lt;{ purchases: Transaction[]; }&gt;</code>
 
