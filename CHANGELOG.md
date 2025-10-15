@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.7.17](https://github.com/Cap-go/capacitor-native-purchases/compare/7.7.16...7.7.17) (2025-10-15)
+
+
+### Bug Fixes
+
+* definition ([1060bde](https://github.com/Cap-go/capacitor-native-purchases/commit/1060bde0a020bd34cf65d54fb3eda443c0d59631))
+
 ## [7.7.16](https://github.com/Cap-go/capacitor-native-purchases/compare/7.7.15...7.7.16) (2025-10-14)
 
 ## [7.7.15](https://github.com/Cap-go/capacitor-native-purchases/compare/7.7.14...7.7.15) (2025-10-11)
