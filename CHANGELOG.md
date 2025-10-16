@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.8.6](https://github.com/Cap-go/capacitor-native-purchases/compare/7.8.5...7.8.6) (2025-10-16)
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.google.gms:google-services to v4.4.4 ([#111](https://github.com/Cap-go/capacitor-native-purchases/issues/111)) ([3702d38](https://github.com/Cap-go/capacitor-native-purchases/commit/3702d3875c698407d540726ff1ebe9fd731977a0))
+
 ## [7.8.5](https://github.com/Cap-go/capacitor-native-purchases/compare/7.8.4...7.8.5) (2025-10-15)
 
 
