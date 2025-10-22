@@ -32,6 +32,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.json.JSONArray;
 
 @CapacitorPlugin(name = "NativePurchases")
@@ -666,115 +668,138 @@ public class NativePurchasesPlugin extends Plugin {
         final boolean hasAccountFilter = accountFilter != null && !accountFilter.isEmpty();
         Log.d(TAG, "Account filter provided: " + (hasAccountFilter ? "[REDACTED]" : "none"));
 
+        final boolean queryInApp = productType == null || productType.equals("inapp");
+        final boolean querySubs = productType == null || productType.equals("subs");
+
+        if (!queryInApp && !querySubs) {
+            Log.d(TAG, "Unknown product type filter provided, returning empty result");
+            JSObject result = new JSObject();
+            result.put("purchases", new JSONArray());
+            call.resolve(result);
+            return;
+        }
+
         this.initBillingClient(null);
 
         JSONArray allPurchases = new JSONArray();
+        AtomicInteger pendingQueries = new AtomicInteger((queryInApp ? 1 : 0) + (querySubs ? 1 : 0));
+        AtomicBoolean finished = new AtomicBoolean(false);
+
+        Runnable maybeFinish = () -> {
+            int remaining = pendingQueries.decrementAndGet();
+            Log.d(TAG, "Pending purchase queries remaining: " + remaining);
+            if (remaining <= 0 && finished.compareAndSet(false, true)) {
+                JSObject result = new JSObject();
+                result.put("purchases", allPurchases);
+                Log.d(TAG, "Returning " + allPurchases.length() + " purchases");
+                closeBillingClient();
+                call.resolve(result);
+            }
+        };
 
         try {
-            // Query in-app purchases if no filter or if filter is "inapp"
-            if (productType == null || productType.equals("inapp")) {
+            if (queryInApp) {
                 Log.d(TAG, "Querying in-app purchases");
                 QueryPurchasesParams queryInAppParams = QueryPurchasesParams.newBuilder()
                     .setProductType(BillingClient.ProductType.INAPP)
                     .build();
 
                 billingClient.queryPurchasesAsync(queryInAppParams, (billingResult, purchases) -> {
-                    Log.d(TAG, "In-app purchases query result: " + billingResult.getResponseCode());
-                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                        for (Purchase purchase : purchases) {
-                            Log.d(TAG, "Processing in-app purchase: " + purchase.getOrderId());
-                            AccountIdentifiers accountIdentifiers = purchase.getAccountIdentifiers();
-                            String purchaseAccountId = accountIdentifiers != null ? accountIdentifiers.getObfuscatedAccountId() : null;
-                            if (hasAccountFilter) {
-                                if (purchaseAccountId == null || !purchaseAccountId.equals(accountFilter)) {
+                    try {
+                        Log.d(TAG, "In-app purchases query result: " + billingResult.getResponseCode());
+                        if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null) {
+                            for (Purchase purchase : purchases) {
+                                Log.d(TAG, "Processing in-app purchase: " + purchase.getOrderId());
+                                AccountIdentifiers accountIdentifiers = purchase.getAccountIdentifiers();
+                                String purchaseAccountId = accountIdentifiers != null ? accountIdentifiers.getObfuscatedAccountId() : null;
+                                if (hasAccountFilter && (purchaseAccountId == null || !purchaseAccountId.equals(accountFilter))) {
                                     Log.d(TAG, "Skipping in-app purchase due to account filter mismatch");
                                     continue;
                                 }
+                                JSObject purchaseData = new JSObject();
+                                purchaseData.put("transactionId", purchase.getPurchaseToken());
+                                purchaseData.put("productIdentifier", purchase.getProducts().isEmpty() ? null : purchase.getProducts().get(0));
+                                purchaseData.put(
+                                    "purchaseDate",
+                                    new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US).format(
+                                        new java.util.Date(purchase.getPurchaseTime())
+                                    )
+                                );
+                                purchaseData.put("quantity", purchase.getQuantity());
+                                purchaseData.put("productType", "inapp");
+                                purchaseData.put("orderId", purchase.getOrderId());
+                                purchaseData.put("purchaseToken", purchase.getPurchaseToken());
+                                purchaseData.put("isAcknowledged", purchase.isAcknowledged());
+                                purchaseData.put("purchaseState", String.valueOf(purchase.getPurchaseState()));
+                                purchaseData.put("appAccountToken", purchaseAccountId);
+                                purchaseData.put("willCancel", null);
+                                synchronized (allPurchases) {
+                                    allPurchases.put(purchaseData);
+                                }
                             }
-                            JSObject purchaseData = new JSObject();
-                            purchaseData.put("transactionId", purchase.getPurchaseToken());
-                            purchaseData.put("productIdentifier", purchase.getProducts().get(0));
-                            purchaseData.put(
-                                "purchaseDate",
-                                new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US).format(
-                                    new java.util.Date(purchase.getPurchaseTime())
-                                )
-                            );
-                            purchaseData.put("quantity", purchase.getQuantity());
-                            purchaseData.put("productType", "inapp");
-                            purchaseData.put("orderId", purchase.getOrderId());
-                            purchaseData.put("purchaseToken", purchase.getPurchaseToken());
-                            purchaseData.put("isAcknowledged", purchase.isAcknowledged());
-                            purchaseData.put("purchaseState", String.valueOf(purchase.getPurchaseState()));
-                            purchaseData.put("appAccountToken", purchaseAccountId);
-                            // Add cancellation information - ALWAYS set willCancel
-                            // Note: Android doesn't provide direct cancellation information in the Purchase object
-                            purchaseData.put("willCancel", null); // Default to null, would need API call to determine actual cancellation date
-                            allPurchases.put(purchaseData);
+                        } else {
+                            Log.d(TAG, "In-app purchase query failed: " + billingResult.getDebugMessage());
                         }
+                    } catch (Exception ex) {
+                        Log.d(TAG, "Error processing in-app purchase query: " + ex.getMessage());
+                    } finally {
+                        maybeFinish.run();
                     }
-
-                    // Query subscriptions if no filter or if filter is "subs"
-                    assert productType != null;
-                    // Only querying in-app, return result now
-                    JSObject result = new JSObject();
-                    result.put("purchases", allPurchases);
-                    Log.d(TAG, "Returning " + allPurchases.length() + " in-app purchases");
-                    closeBillingClient();
-                    call.resolve(result);
                 });
-            } else if (productType.equals("subs")) {
-                // Only query subscriptions
+            }
+
+            if (querySubs) {
                 Log.d(TAG, "Querying only subscription purchases");
                 QueryPurchasesParams querySubsParams = QueryPurchasesParams.newBuilder()
                     .setProductType(BillingClient.ProductType.SUBS)
                     .build();
 
                 billingClient.queryPurchasesAsync(querySubsParams, (billingResult, purchases) -> {
-                    Log.d(TAG, "Subscription purchases query result: " + billingResult.getResponseCode());
-                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                        for (Purchase purchase : purchases) {
-                            Log.d(TAG, "Processing subscription purchase: " + purchase.getOrderId());
-                            AccountIdentifiers accountIdentifiers = purchase.getAccountIdentifiers();
-                            String purchaseAccountId = accountIdentifiers != null ? accountIdentifiers.getObfuscatedAccountId() : null;
-                            if (hasAccountFilter) {
-                                if (purchaseAccountId == null || !purchaseAccountId.equals(accountFilter)) {
+                    try {
+                        Log.d(TAG, "Subscription purchases query result: " + billingResult.getResponseCode());
+                        if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null) {
+                            for (Purchase purchase : purchases) {
+                                Log.d(TAG, "Processing subscription purchase: " + purchase.getOrderId());
+                                AccountIdentifiers accountIdentifiers = purchase.getAccountIdentifiers();
+                                String purchaseAccountId = accountIdentifiers != null ? accountIdentifiers.getObfuscatedAccountId() : null;
+                                if (hasAccountFilter && (purchaseAccountId == null || !purchaseAccountId.equals(accountFilter))) {
                                     Log.d(TAG, "Skipping subscription purchase due to account filter mismatch");
                                     continue;
                                 }
+                                JSObject purchaseData = new JSObject();
+                                purchaseData.put("transactionId", purchase.getPurchaseToken());
+                                purchaseData.put("productIdentifier", purchase.getProducts().isEmpty() ? null : purchase.getProducts().get(0));
+                                purchaseData.put(
+                                    "purchaseDate",
+                                    new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US).format(
+                                        new java.util.Date(purchase.getPurchaseTime())
+                                    )
+                                );
+                                purchaseData.put("quantity", purchase.getQuantity());
+                                purchaseData.put("productType", "subs");
+                                purchaseData.put("orderId", purchase.getOrderId());
+                                purchaseData.put("purchaseToken", purchase.getPurchaseToken());
+                                purchaseData.put("isAcknowledged", purchase.isAcknowledged());
+                                purchaseData.put("purchaseState", String.valueOf(purchase.getPurchaseState()));
+                                purchaseData.put("appAccountToken", purchaseAccountId);
+                                purchaseData.put("willCancel", null);
+                                synchronized (allPurchases) {
+                                    allPurchases.put(purchaseData);
+                                }
                             }
-                            JSObject purchaseData = new JSObject();
-                            purchaseData.put("transactionId", purchase.getPurchaseToken());
-                            purchaseData.put("productIdentifier", purchase.getProducts().get(0));
-                            purchaseData.put(
-                                "purchaseDate",
-                                new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US).format(
-                                    new java.util.Date(purchase.getPurchaseTime())
-                                )
-                            );
-                            purchaseData.put("quantity", purchase.getQuantity());
-                            purchaseData.put("productType", "subs");
-                            purchaseData.put("orderId", purchase.getOrderId());
-                            purchaseData.put("purchaseToken", purchase.getPurchaseToken());
-                            purchaseData.put("isAcknowledged", purchase.isAcknowledged());
-                            purchaseData.put("purchaseState", String.valueOf(purchase.getPurchaseState()));
-                            purchaseData.put("appAccountToken", purchaseAccountId);
-                            // Add cancellation information - ALWAYS set willCancel
-                            // Note: Android doesn't provide direct cancellation information in the Purchase object
-                            purchaseData.put("willCancel", null); // Default to null, would need API call to determine actual cancellation date
-                            allPurchases.put(purchaseData);
+                        } else {
+                            Log.d(TAG, "Subscription purchase query failed: " + billingResult.getDebugMessage());
                         }
+                    } catch (Exception ex) {
+                        Log.d(TAG, "Error processing subscription purchase query: " + ex.getMessage());
+                    } finally {
+                        maybeFinish.run();
                     }
-
-                    JSObject result = new JSObject();
-                    result.put("purchases", allPurchases);
-                    Log.d(TAG, "Returning " + allPurchases.length() + " subscription purchases");
-                    closeBillingClient();
-                    call.resolve(result);
                 });
             }
         } catch (Exception e) {
             Log.d(TAG, "Exception during getPurchases: " + e.getMessage());
+            finished.set(true);
             closeBillingClient();
             call.reject(e.getMessage());
         }
