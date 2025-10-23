@@ -39,7 +39,7 @@ import org.json.JSONArray;
 @CapacitorPlugin(name = "NativePurchases")
 public class NativePurchasesPlugin extends Plugin {
 
-    public final String PLUGIN_VERSION = "0.0.25";
+    private final String PLUGIN_VERSION = "";
     public static final String TAG = "NativePurchases";
     private static final Phaser semaphoreReady = new Phaser(1);
     private BillingClient billingClient;
@@ -718,7 +718,10 @@ public class NativePurchasesPlugin extends Plugin {
                                 }
                                 JSObject purchaseData = new JSObject();
                                 purchaseData.put("transactionId", purchase.getPurchaseToken());
-                                purchaseData.put("productIdentifier", purchase.getProducts().isEmpty() ? null : purchase.getProducts().get(0));
+                                purchaseData.put(
+                                    "productIdentifier",
+                                    purchase.getProducts().isEmpty() ? null : purchase.getProducts().get(0)
+                                );
                                 purchaseData.put(
                                     "purchaseDate",
                                     new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US).format(
@@ -768,7 +771,10 @@ public class NativePurchasesPlugin extends Plugin {
                                 }
                                 JSObject purchaseData = new JSObject();
                                 purchaseData.put("transactionId", purchase.getPurchaseToken());
-                                purchaseData.put("productIdentifier", purchase.getProducts().isEmpty() ? null : purchase.getProducts().get(0));
+                                purchaseData.put(
+                                    "productIdentifier",
+                                    purchase.getProducts().isEmpty() ? null : purchase.getProducts().get(0)
+                                );
                                 purchaseData.put(
                                     "purchaseDate",
                                     new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US).format(
