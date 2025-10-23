@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.9.0](https://github.com/Cap-go/capacitor-native-purchases/compare/7.8.9...7.9.0) (2025-10-23)
+
+
+### Features
+
+* update build workflows and add Discord release notifications ([fad9044](https://github.com/Cap-go/capacitor-native-purchases/commit/fad9044441a38f143ef96570b2e741ce7e137f4d))
+
+
+### Bug Fixes
+
+* remove content field from Discord release notification ([95b7b7d](https://github.com/Cap-go/capacitor-native-purchases/commit/95b7b7db02ae2448559a1ba6c6e1b0cb96eefa82))
+
 ## [7.8.9](https://github.com/Cap-go/capacitor-native-purchases/compare/7.8.8...7.8.9) (2025-10-22)
 
 
