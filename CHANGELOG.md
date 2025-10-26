@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.11.0](https://github.com/Cap-go/capacitor-native-purchases/compare/7.10.0...7.11.0) (2025-10-26)
+
+
+### Features
+
+* enhance appAccountToken documentation for fraud detection and user linking ([e15e915](https://github.com/Cap-go/capacitor-native-purchases/commit/e15e9156b6c7c9d5b066055185dfddfe4b6c2fea))
+
 ## [7.10.0](https://github.com/Cap-go/capacitor-native-purchases/compare/7.9.5...7.10.0) (2025-10-26)
 
 
