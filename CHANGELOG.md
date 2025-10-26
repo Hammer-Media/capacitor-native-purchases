@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.10.0](https://github.com/Cap-go/capacitor-native-purchases/compare/7.9.5...7.10.0) (2025-10-26)
+
+
+### Features
+
+* add manageSubscriptions method for Android and iOS to open subscription management pages ([b2a37fc](https://github.com/Cap-go/capacitor-native-purchases/commit/b2a37fc33613cd311c5c767b5751da6b2d5b35a2))
+
 ## [7.9.5](https://github.com/Cap-go/capacitor-native-purchases/compare/7.9.4...7.9.5) (2025-10-26)
 
 
