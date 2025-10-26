@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.9.5](https://github.com/Cap-go/capacitor-native-purchases/compare/7.9.4...7.9.5) (2025-10-26)
+
+
+### Bug Fixes
+
+* prevent bump for app ([b86b4e8](https://github.com/Cap-go/capacitor-native-purchases/commit/b86b4e8a6c6b99b98ae6ddf7bc26256ad1bc7af7))
+
 ## [7.9.4](https://github.com/Cap-go/capacitor-native-purchases/compare/7.9.3...7.9.4) (2025-10-26)
 
 ## [7.9.3](https://github.com/Cap-go/capacitor-native-purchases/compare/7.9.2...7.9.3) (2025-10-26)
