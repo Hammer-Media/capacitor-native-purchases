@@ -10,6 +10,10 @@
 
 This plugin allows you to implement in-app purchases and subscriptions in your Capacitor app using native APIs.
 
+## Documentation
+
+The most complete doc is available here: https://capgo.app/docs/plugins/native-purchases/
+
 ## Install
 
 ```bash
