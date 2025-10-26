@@ -498,6 +498,118 @@ public class NativePurchasesPlugin extends Plugin {
         Log.d(TAG, "restorePurchases() completed");
     }
 
+    private void querySingleProductDetails(String productIdentifier, String productType, PluginCall call) {
+        Log.d(TAG, "querySingleProductDetails() called");
+        Log.d(TAG, "Product identifier: " + productIdentifier);
+        Log.d(TAG, "Product type: " + productType);
+
+        String productTypeForQuery = productType.equals("inapp") ? BillingClient.ProductType.INAPP : BillingClient.ProductType.SUBS;
+        Log.d(TAG, "Creating query product: ID='" + productIdentifier + "', Type='" + productTypeForQuery + "'");
+
+        List<QueryProductDetailsParams.Product> productList = new ArrayList<>();
+        productList.add(
+            QueryProductDetailsParams.Product.newBuilder().setProductId(productIdentifier).setProductType(productTypeForQuery).build()
+        );
+
+        QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder().setProductList(productList).build();
+        Log.d(TAG, "Initializing billing client for single product query");
+        this.initBillingClient(call);
+        try {
+            Log.d(TAG, "Querying product details");
+            billingClient.queryProductDetailsAsync(
+                params,
+                new ProductDetailsResponseListener() {
+                    @Override
+                    public void onProductDetailsResponse(
+                        @NonNull BillingResult billingResult,
+                        @NonNull QueryProductDetailsResult queryProductDetailsResult
+                    ) {
+                        List<ProductDetails> productDetailsList = queryProductDetailsResult.getProductDetailsList();
+                        Log.d(TAG, "onProductDetailsResponse() called for single product query");
+                        Log.d(TAG, "Query result: " + billingResult.getResponseCode() + " - " + billingResult.getDebugMessage());
+                        Log.d(TAG, "Product details count: " + productDetailsList.size());
+
+                        if (productDetailsList.isEmpty()) {
+                            Log.d(TAG, "No product found in query");
+                            Log.d(TAG, "This usually means:");
+                            Log.d(TAG, "1. Product doesn't exist in Google Play Console");
+                            Log.d(TAG, "2. Product is not published/active");
+                            Log.d(TAG, "3. App is not properly configured for the product type");
+                            Log.d(TAG, "4. Wrong product ID or type");
+                            closeBillingClient();
+                            call.reject("Product not found");
+                            return;
+                        }
+
+                        ProductDetails productDetails = productDetailsList.get(0);
+                        Log.d(TAG, "Processing product details: " + productDetails.getProductId());
+                        JSObject product = new JSObject();
+                        product.put("title", productDetails.getName());
+                        product.put("description", productDetails.getDescription());
+                        Log.d(TAG, "Product title: " + productDetails.getName());
+                        Log.d(TAG, "Product description: " + productDetails.getDescription());
+
+                        if (productType.equals("inapp")) {
+                            Log.d(TAG, "Processing as in-app product");
+                            product.put("identifier", productDetails.getProductId());
+                            double price =
+                                Objects.requireNonNull(productDetails.getOneTimePurchaseOfferDetails()).getPriceAmountMicros() /
+                                1000000.0;
+                            product.put("price", price);
+                            product.put("priceString", productDetails.getOneTimePurchaseOfferDetails().getFormattedPrice());
+                            product.put("currencyCode", productDetails.getOneTimePurchaseOfferDetails().getPriceCurrencyCode());
+                            Log.d(TAG, "Price: " + price);
+                            Log.d(TAG, "Formatted price: " + productDetails.getOneTimePurchaseOfferDetails().getFormattedPrice());
+                            Log.d(TAG, "Currency: " + productDetails.getOneTimePurchaseOfferDetails().getPriceCurrencyCode());
+                        } else {
+                            Log.d(TAG, "Processing as subscription product");
+                            ProductDetails.SubscriptionOfferDetails selectedOfferDetails = productDetails
+                                .getSubscriptionOfferDetails()
+                                .get(0);
+                            product.put("planIdentifier", productDetails.getProductId());
+                            product.put("identifier", selectedOfferDetails.getBasePlanId());
+                            double price =
+                                selectedOfferDetails.getPricingPhases().getPricingPhaseList().get(0).getPriceAmountMicros() / 1000000.0;
+                            product.put("price", price);
+                            product.put(
+                                "priceString",
+                                selectedOfferDetails.getPricingPhases().getPricingPhaseList().get(0).getFormattedPrice()
+                            );
+                            product.put(
+                                "currencyCode",
+                                selectedOfferDetails.getPricingPhases().getPricingPhaseList().get(0).getPriceCurrencyCode()
+                            );
+                            Log.d(TAG, "Plan identifier: " + productDetails.getProductId());
+                            Log.d(TAG, "Base plan ID: " + selectedOfferDetails.getBasePlanId());
+                            Log.d(TAG, "Price: " + price);
+                            Log.d(
+                                TAG,
+                                "Formatted price: " +
+                                    selectedOfferDetails.getPricingPhases().getPricingPhaseList().get(0).getFormattedPrice()
+                            );
+                            Log.d(
+                                TAG,
+                                "Currency: " +
+                                    selectedOfferDetails.getPricingPhases().getPricingPhaseList().get(0).getPriceCurrencyCode()
+                            );
+                        }
+                        product.put("isFamilyShareable", false);
+
+                        JSObject ret = new JSObject();
+                        ret.put("product", product);
+                        Log.d(TAG, "Returning single product");
+                        closeBillingClient();
+                        call.resolve(ret);
+                    }
+                }
+            );
+        } catch (Exception e) {
+            Log.d(TAG, "Exception during single product query: " + e.getMessage());
+            closeBillingClient();
+            call.reject(e.getMessage());
+        }
+    }
+
     private void queryProductDetails(List<String> productIdentifiers, String productType, PluginCall call) {
         Log.d(TAG, "queryProductDetails() called");
         Log.d(TAG, "Product identifiers count: " + productIdentifiers.size());
@@ -655,7 +767,7 @@ public class NativePurchasesPlugin extends Plugin {
             call.reject("productIdentifier is empty");
             return;
         }
-        queryProductDetails(Collections.singletonList(productIdentifier), productType, call);
+        querySingleProductDetails(productIdentifier, productType, call);
     }
 
     @PluginMethod
