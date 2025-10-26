@@ -922,4 +922,23 @@ public class NativePurchasesPlugin extends Plugin {
             call.reject(e.getMessage());
         }
     }
+
+    @PluginMethod
+    public void manageSubscriptions(PluginCall call) {
+        Log.d(TAG, "manageSubscriptions() called");
+        try {
+            // Open the Google Play subscription management page
+            // This intent opens the subscription center for the app
+            android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_VIEW);
+            intent.setData(android.net.Uri.parse("https://play.google.com/store/account/subscriptions?package=" + getContext().getPackageName()));
+            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(intent);
+
+            Log.d(TAG, "manageSubscriptions() opened successfully");
+            call.resolve();
+        } catch (Exception e) {
+            Log.d(TAG, "manageSubscriptions() error: " + e.getMessage());
+            call.reject("Failed to open subscription management page", e);
+        }
+    }
 }

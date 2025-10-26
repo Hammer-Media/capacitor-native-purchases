@@ -17,7 +17,8 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "getProducts", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getProduct", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getPluginVersion", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "getPurchases", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "getPurchases", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "manageSubscriptions", returnType: CAPPluginReturnPromise)
     ]
 
     private let PLUGIN_VERSION: String = "7.9.5"
@@ -474,6 +475,25 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                         print("getPurchases error: \(error)")
                         call.reject(error.localizedDescription)
                     }
+                }
+            }
+        } else {
+            print("Not implemented under iOS 15")
+            call.reject("Not implemented under iOS 15")
+        }
+    }
+
+    @objc func manageSubscriptions(_ call: CAPPluginCall) {
+        if #available(iOS 15.0, *) {
+            print("manageSubscriptions")
+            Task { @MainActor in
+                do {
+                    // Open the App Store subscription management page
+                    try await AppStore.showManageSubscriptions(in: nil)
+                    call.resolve()
+                } catch {
+                    print("manageSubscriptions error: \(error)")
+                    call.reject(error.localizedDescription)
                 }
             }
         } else {

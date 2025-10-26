@@ -329,7 +329,7 @@ export interface NativePurchasesPlugin {
    * @param options - The product to purchase
    * @param options.productIdentifier - The product identifier of the product you want to purchase.
    * @param options.productType - Only Android, the type of product, can be inapp or subs. Will use inapp by default.
-   * @param options.planIdentifier - Only Android, the identifier of the plan you want to purchase, require for for subs.
+   * @param options.planIdentifier - Only Android, the identifier of the base plan you want to purchase from Google Play Console. REQUIRED for Android subscriptions, ignored on iOS.
    * @param options.quantity - Only iOS, the number of items you wish to purchase. Will use 1 by default.
    * @param options.appAccountToken - Optional. UUID for the user's account. Works on both platforms and maps to Google Play's ObfuscatedAccountId on Android.
    */
@@ -390,6 +390,19 @@ export interface NativePurchasesPlugin {
     productType?: PURCHASE_TYPE;
     appAccountToken?: string;
   }): Promise<{ purchases: Transaction[] }>;
+
+  /**
+   * Opens the platform's native subscription management page.
+   * This allows users to view, modify, or cancel their subscriptions.
+   *
+   * - iOS: Opens the App Store subscription management page for the current app
+   * - Android: Opens the Google Play subscription management page
+   *
+   * @returns {Promise<void>} Promise that resolves when the management page is opened
+   * @throws An error if the subscription management page cannot be opened
+   * @since 7.10.0
+   */
+  manageSubscriptions(): Promise<void>;
 
   /**
    * Listen for StoreKit transaction updates delivered by Apple's Transaction.updates.

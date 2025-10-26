@@ -95,12 +95,18 @@ There are two types of purchases with different requirements:
 | Purchase Type | productType | planIdentifier | Use Case |
 |---------------|-------------|----------------|----------|
 | **In-App Purchase** | `PURCHASE_TYPE.INAPP` | ❌ Not needed | One-time purchases (premium features, remove ads, etc.) |
-| **Subscription** | `PURCHASE_TYPE.SUBS` | ✅ **REQUIRED** | Recurring purchases (monthly/yearly subscriptions) |
+| **Subscription** | `PURCHASE_TYPE.SUBS` | ✅ **REQUIRED (Android only)** | Recurring purchases (monthly/yearly subscriptions) |
 
 **Key Rules:**
-- ✅ **In-App Products**: Use `productType: PURCHASE_TYPE.INAPP`, no `planIdentifier` needed
-- ✅ **Subscriptions**: Must use `productType: PURCHASE_TYPE.SUBS` AND `planIdentifier: "your-plan-id"`
-- ❌ **Missing planIdentifier** for subscriptions will cause purchase failures
+- ✅ **In-App Products**: Use `productType: PURCHASE_TYPE.INAPP`, no `planIdentifier` needed on any platform
+- ✅ **Subscriptions on Android**: Must use `productType: PURCHASE_TYPE.SUBS` AND `planIdentifier: "your-plan-id"` (the Base Plan ID from Google Play Console)
+- ✅ **Subscriptions on iOS**: Use `productType: PURCHASE_TYPE.SUBS`, `planIdentifier` is optional and ignored
+- ❌ **Missing planIdentifier** for Android subscriptions will cause purchase failures
+
+**About planIdentifier (Android-specific):**
+The `planIdentifier` parameter is **only required for Android subscriptions**. It should be set to the Base Plan ID that you configure in the Google Play Console when creating your subscription product. For example, if you create a monthly subscription with base plan ID "monthly-plan" in Google Play Console, you would use `planIdentifier: "monthly-plan"` when purchasing that subscription.
+
+iOS does not use this parameter - subscriptions on iOS only require the product identifier.
 
 ### Complete Example: Get Product Info and Purchase
 
@@ -113,12 +119,12 @@ class PurchaseManager {
   // In-app product (one-time purchase)
   private premiumProductId = 'com.yourapp.premium_features';
   
-  // Subscription products (require planIdentifier)
+  // Subscription products (require planIdentifier on Android)
   private monthlySubId = 'com.yourapp.premium.monthly';
-  private monthlyPlanId = 'monthly-plan';  // Base plan ID from store
-  
+  private monthlyPlanId = 'monthly-plan';  // Base plan ID from Google Play Console (Android only)
+
   private yearlySubId = 'com.yourapp.premium.yearly';
-  private yearlyPlanId = 'yearly-plan';    // Base plan ID from store
+  private yearlyPlanId = 'yearly-plan';    // Base plan ID from Google Play Console (Android only)
 
   async initializeStore() {
     try {
@@ -203,42 +209,42 @@ class PurchaseManager {
     }
   }
 
-  // Purchase subscription (planIdentifier REQUIRED)
+  // Purchase subscription (planIdentifier REQUIRED for Android)
   async purchaseMonthlySubscription() {
     try {
       console.log('Starting subscription purchase...');
-      
+
       const result = await NativePurchases.purchaseProduct({
         productIdentifier: this.monthlySubId,
-        planIdentifier: this.monthlyPlanId,    // REQUIRED for subscriptions
+        planIdentifier: this.monthlyPlanId,    // REQUIRED for Android subscriptions, ignored on iOS
         productType: PURCHASE_TYPE.SUBS,       // REQUIRED for subscriptions
         quantity: 1
       });
-      
+
       console.log('Subscription purchase successful!', result.transactionId);
       await this.handleSuccessfulPurchase(result.transactionId, 'monthly');
-      
+
     } catch (error) {
       console.error('Subscription purchase failed:', error);
       this.handlePurchaseError(error);
     }
   }
 
-  // Purchase yearly subscription (planIdentifier REQUIRED)
+  // Purchase yearly subscription (planIdentifier REQUIRED for Android)
   async purchaseYearlySubscription() {
     try {
       console.log('Starting yearly subscription purchase...');
-      
+
       const result = await NativePurchases.purchaseProduct({
         productIdentifier: this.yearlySubId,
-        planIdentifier: this.yearlyPlanId,     // REQUIRED for subscriptions
-        productType: PURCHASE_TYPE.SUBS,       // REQUIRED for subscriptions  
+        planIdentifier: this.yearlyPlanId,     // REQUIRED for Android subscriptions, ignored on iOS
+        productType: PURCHASE_TYPE.SUBS,       // REQUIRED for subscriptions
         quantity: 1
       });
-      
+
       console.log('Yearly subscription successful!', result.transactionId);
       await this.handleSuccessfulPurchase(result.transactionId, 'yearly');
-      
+
     } catch (error) {
       console.error('Yearly subscription failed:', error);
       this.handlePurchaseError(error);
@@ -289,13 +295,22 @@ class PurchaseManager {
     try {
       await NativePurchases.restorePurchases();
       console.log('Purchases restored successfully');
-      
+
       // Check if user has active premium after restore
       const product = await this.getProductInfo();
       // Update UI based on restored purchases
-      
+
     } catch (error) {
       console.error('Failed to restore purchases:', error);
+    }
+  }
+
+  async openSubscriptionManagement() {
+    try {
+      await NativePurchases.manageSubscriptions();
+      console.log('Opened subscription management page');
+    } catch (error) {
+      console.error('Failed to open subscription management:', error);
     }
   }
 }
@@ -321,6 +336,10 @@ document.getElementById('buy-yearly-button')?.addEventListener('click', () => {
 
 document.getElementById('restore-button')?.addEventListener('click', () => {
   purchaseManager.restorePurchases();
+});
+
+document.getElementById('manage-subscriptions-button')?.addEventListener('click', () => {
+  purchaseManager.openSubscriptionManagement();
 });
 ```
 
@@ -441,13 +460,13 @@ const buySubscription = async () => {
     const confirmed = confirm(`Subscribe to ${product.title} for ${product.priceString}?`);
     if (!confirmed) return;
 
-    // Make subscription purchase (planIdentifier REQUIRED for Android)
+    // Make subscription purchase (planIdentifier REQUIRED for Android, ignored on iOS)
     const result = await NativePurchases.purchaseProduct({
       productIdentifier: 'com.yourapp.premium.monthly',
-      planIdentifier: 'monthly-plan',           // REQUIRED for Android subscriptions
+      planIdentifier: 'monthly-plan',           // REQUIRED for Android subscriptions, ignored on iOS
       productType: PURCHASE_TYPE.SUBS,          // REQUIRED for subscriptions
       quantity: 1,
-      appAccountToken: userUUID                 // Optional: iOS & Android - links purchases to a user (maps to Google Play ObfuscatedAccountId)
+      appAccountToken: userUUID                 // Optional: iOS & Android - links purchases to a user (maps to Google Play ObfuscatedAccountId on Android)
     });
 
     alert('Subscription successful! Transaction ID: ' + result.transactionId);
@@ -484,6 +503,30 @@ const checkBillingSupport = async () => {
 };
 ```
 
+### Manage Subscriptions
+
+Allow users to manage their subscriptions directly from your app. This opens the platform's native subscription management page:
+
+```typescript
+import { NativePurchases } from '@capgo/native-purchases';
+
+const openSubscriptionSettings = async () => {
+  try {
+    await NativePurchases.manageSubscriptions();
+    // On iOS: Opens the App Store subscription management page
+    // On Android: Opens the Google Play subscription management page
+  } catch (error) {
+    console.error('Error opening subscription management:', error);
+  }
+};
+```
+
+This is particularly useful for:
+- Allowing users to cancel or modify their subscriptions
+- Viewing subscription renewal dates
+- Changing subscription plans
+- Managing billing information
+
 ### API Reference
 
 #### Core Methods
@@ -499,13 +542,16 @@ await NativePurchases.getProduct({ productIdentifier: 'product_id' });
 await NativePurchases.getProducts({ productIdentifiers: ['id1', 'id2'] });
 
 // Purchase a product
-await NativePurchases.purchaseProduct({ 
-  productIdentifier: 'product_id', 
-  quantity: 1 
+await NativePurchases.purchaseProduct({
+  productIdentifier: 'product_id',
+  quantity: 1
 });
 
 // Restore previous purchases
 await NativePurchases.restorePurchases();
+
+// Open subscription management page
+await NativePurchases.manageSubscriptions();
 
 // Get plugin version
 await NativePurchases.getPluginVersion();
@@ -731,6 +777,7 @@ This approach balances immediate user gratification with proper server-side vali
 * [`isBillingSupported()`](#isbillingsupported)
 * [`getPluginVersion()`](#getpluginversion)
 * [`getPurchases(...)`](#getpurchases)
+* [`manageSubscriptions()`](#managesubscriptions)
 * [`addListener('transactionUpdated', ...)`](#addlistenertransactionupdated-)
 * [`removeAllListeners()`](#removealllisteners)
 * [Interfaces](#interfaces)
@@ -845,6 +892,23 @@ This method queries the platform's purchase history for the current user.
 **Returns:** <code>Promise&lt;{ purchases: Transaction[]; }&gt;</code>
 
 **Since:** 7.2.0
+
+--------------------
+
+
+### manageSubscriptions()
+
+```typescript
+manageSubscriptions() => Promise<void>
+```
+
+Opens the platform's native subscription management page.
+This allows users to view, modify, or cancel their subscriptions.
+
+- iOS: Opens the App Store subscription management page for the current app
+- Android: Opens the Google Play subscription management page
+
+**Since:** 7.10.0
 
 --------------------
 
