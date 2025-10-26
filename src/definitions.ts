@@ -153,7 +153,34 @@ export interface Transaction {
    */
   readonly receipt?: string;
   /**
-   * Account token provided during purchase. Works on both platforms and maps to Google Play's ObfuscatedAccountId on Android.
+   * An optional obfuscated identifier that uniquely associates the transaction with a user account in your app.
+   *
+   * PURPOSE:
+   * - Fraud detection: Helps platforms detect irregular activity (e.g., many devices purchasing on the same account)
+   * - User linking: Links purchases to in-game characters, avatars, or in-app profiles
+   *
+   * PLATFORM DIFFERENCES:
+   * - iOS: Must be a valid UUID format (e.g., "550e8400-e29b-41d4-a716-446655440000")
+   *        Apple's StoreKit 2 requires UUID format for the appAccountToken parameter
+   * - Android: Can be any obfuscated string (max 64 chars), maps to Google Play's ObfuscatedAccountId
+   *           Google recommends using encryption or one-way hash
+   *
+   * SECURITY REQUIREMENTS (especially for Android):
+   * - DO NOT store Personally Identifiable Information (PII) like emails in cleartext
+   * - Use encryption or a one-way hash to generate an obfuscated identifier
+   * - Maximum length: 64 characters (both platforms)
+   * - Storing PII in cleartext will result in purchases being blocked by Google Play
+   *
+   * IMPLEMENTATION EXAMPLE:
+   * ```typescript
+   * // For iOS: Generate a deterministic UUID from user ID
+   * import { v5 as uuidv5 } from 'uuid';
+   * const NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'; // Your app's namespace UUID
+   * const appAccountToken = uuidv5(userId, NAMESPACE);
+   *
+   * // For Android: Can also use UUID or any hashed value
+   * // The same UUID approach works for both platforms
+   * ```
    */
   readonly appAccountToken?: string | null;
   /**
@@ -331,7 +358,12 @@ export interface NativePurchasesPlugin {
    * @param options.productType - Only Android, the type of product, can be inapp or subs. Will use inapp by default.
    * @param options.planIdentifier - Only Android, the identifier of the base plan you want to purchase from Google Play Console. REQUIRED for Android subscriptions, ignored on iOS.
    * @param options.quantity - Only iOS, the number of items you wish to purchase. Will use 1 by default.
-   * @param options.appAccountToken - Optional. UUID for the user's account. Works on both platforms and maps to Google Play's ObfuscatedAccountId on Android.
+   * @param options.appAccountToken - Optional identifier uniquely associated with the user's account in your app.
+   *                                  PLATFORM REQUIREMENTS:
+   *                                  - iOS: Must be a valid UUID format (StoreKit 2 requirement)
+   *                                  - Android: Can be any obfuscated string (max 64 chars), maps to ObfuscatedAccountId
+   *                                  SECURITY: DO NOT use PII like emails in cleartext - use UUID or hashed value.
+   *                                  RECOMMENDED: Use UUID v5 with deterministic generation for cross-platform compatibility.
    */
   purchaseProduct(options: {
     productIdentifier: string;
@@ -381,7 +413,9 @@ export interface NativePurchasesPlugin {
    *
    * @param options - Optional parameters for filtering purchases
    * @param options.productType - Only Android, filter by product type (inapp or subs). If not specified, returns both types.
-   * @param options.appAccountToken - Optional filter to restrict results to purchases that used the provided account token (works on both platforms and maps to Google Play's ObfuscatedAccountId on Android).
+   * @param options.appAccountToken - Optional filter to restrict results to purchases that used the provided account token.
+   *                                   Must be the same identifier used during purchase (UUID format for iOS, any obfuscated string for Android).
+   *                                   iOS: UUID format required. Android: Maps to ObfuscatedAccountId.
    * @returns {Promise<{ purchases: Transaction[] }>} Promise that resolves with array of user's purchases
    * @throws An error if the purchase query fails
    * @since 7.2.0

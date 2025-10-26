@@ -424,7 +424,11 @@ const buyInAppProduct = async () => {
       productIdentifier: 'com.yourapp.premium_features',
       productType: PURCHASE_TYPE.INAPP,
       quantity: 1,
-      appAccountToken: userUUID // Optional: iOS & Android - links purchases to a user (maps to Google Play ObfuscatedAccountId)
+      appAccountToken: uuidToken // Optional: User identifier in UUID format
+                                 // iOS: Must be valid UUID (required by StoreKit 2)
+                                 // Android: UUID works, or any obfuscated string (max 64 chars)
+                                 // RECOMMENDED: Use UUID v5 for cross-platform compatibility
+                                 // Example: uuidv5(userId, APP_NAMESPACE)
     });
 
     alert('Purchase successful! Transaction ID: ' + result.transactionId);
@@ -466,7 +470,11 @@ const buySubscription = async () => {
       planIdentifier: 'monthly-plan',           // REQUIRED for Android subscriptions, ignored on iOS
       productType: PURCHASE_TYPE.SUBS,          // REQUIRED for subscriptions
       quantity: 1,
-      appAccountToken: userUUID                 // Optional: iOS & Android - links purchases to a user (maps to Google Play ObfuscatedAccountId on Android)
+      appAccountToken: uuidToken                // Optional: User identifier in UUID format
+                                                // iOS: Must be valid UUID (required by StoreKit 2)
+                                                // Android: UUID works, or any obfuscated string (max 64 chars)
+                                                // RECOMMENDED: Use UUID v5 for cross-platform compatibility
+                                                // Example: uuidv5(userId, APP_NAMESPACE)
     });
 
     alert('Subscription successful! Transaction ID: ' + result.transactionId);
@@ -526,6 +534,124 @@ This is particularly useful for:
 - Viewing subscription renewal dates
 - Changing subscription plans
 - Managing billing information
+
+### Using appAccountToken for Fraud Detection and User Linking
+
+The `appAccountToken` parameter is an optional but highly recommended security feature that helps both you and the platform stores detect fraud and link purchases to specific users in your app.
+
+#### What is appAccountToken?
+
+An identifier (max 64 characters) that uniquely associates transactions with user accounts in your app. It serves two main purposes:
+
+1. **Fraud Detection**: Google Play and Apple use this to detect irregular activity, such as many devices making purchases on the same account within a brief timeframe
+2. **User Linking**: Links purchases to specific in-game characters, avatars, or in-app profiles that initiated the purchase
+
+#### Platform-Specific Requirements
+
+**IMPORTANT: iOS and Android have different format requirements:**
+
+| Platform | Format Requirement | Maps To |
+|----------|-------------------|---------|
+| **iOS** | **Must be a valid UUID** (e.g., `"550e8400-e29b-41d4-a716-446655440000"`) | Apple StoreKit 2's `appAccountToken` parameter |
+| **Android** | Any obfuscated string (max 64 chars) | Google Play's `ObfuscatedAccountId` |
+
+**iOS Specific:**
+- Apple's StoreKit 2 requires the `appAccountToken` to be in UUID format
+- The plugin validates and converts the string to UUID before passing to StoreKit
+- If the format is invalid, the token will be ignored
+
+**Android Specific:**
+- Google recommends using encryption or one-way hash
+- Storing PII in cleartext will result in purchases being blocked by Google Play
+
+#### Critical Security Requirements
+
+**DO NOT use Personally Identifiable Information (PII) in cleartext:**
+- ❌ WRONG: `appAccountToken: 'user@example.com'`
+- ❌ WRONG: `appAccountToken: 'john.doe'`
+- ✅ CORRECT (iOS & Android): `appAccountToken: uuidv5(userId, NAMESPACE)`
+- ✅ CORRECT (Android only): `appAccountToken: hash(userId).substring(0, 64)`
+
+**For cross-platform compatibility, using UUID format is recommended for both platforms.**
+
+#### Implementation Example
+
+```typescript
+// RECOMMENDED: Use UUID v5 for cross-platform compatibility (works on both iOS and Android)
+import { v5 as uuidv5 } from 'uuid'; // npm install uuid
+
+// Generate a deterministic UUID from user ID
+function generateAppAccountToken(userId: string): string {
+  // Use a consistent namespace UUID for your app (generate once and keep constant)
+  const APP_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+
+  // Generate deterministic UUID - same userId always produces same UUID
+  const uuid = uuidv5(userId, APP_NAMESPACE);
+
+  return uuid; // e.g., "550e8400-e29b-41d4-a716-446655440000"
+}
+
+// ALTERNATIVE: For Android-only apps (SHA-256 hash)
+function generateAppAccountTokenAndroidOnly(userId: string): string {
+  // This works on Android but will be ignored on iOS (not UUID format)
+  const hash = crypto.createHash('sha256')
+    .update(userId)
+    .digest('hex')
+    .substring(0, 64); // Ensure max 64 chars
+
+  return hash;
+}
+
+// ALTERNATIVE: HMAC with secret key for Android-only apps
+function generateSecureAppAccountTokenAndroidOnly(userId: string, secretKey: string): string {
+  // This works on Android but will be ignored on iOS (not UUID format)
+  const hmac = crypto.createHmac('sha256', secretKey)
+    .update(userId)
+    .digest('hex')
+    .substring(0, 64);
+
+  return hmac;
+}
+
+// Use in your purchase flow (cross-platform)
+const userId = 'user-12345'; // Your internal user ID
+const appAccountToken = generateAppAccountToken(userId);
+
+await NativePurchases.purchaseProduct({
+  productIdentifier: 'com.yourapp.premium',
+  productType: PURCHASE_TYPE.INAPP,
+  appAccountToken: appAccountToken // UUID format works on both iOS and Android
+});
+
+// Later, retrieve purchases for this user
+const { purchases } = await NativePurchases.getPurchases({
+  appAccountToken: appAccountToken
+});
+```
+
+**Why UUID v5 is Recommended:**
+- ✅ Works on both iOS (required) and Android (accepted)
+- ✅ Deterministic: Same user ID always produces the same UUID
+- ✅ Secure: No PII exposure
+- ✅ Standard format: Widely supported
+- ✅ Reversible mapping: You can store the mapping in your backend
+
+#### Best Practices
+
+1. **Use UUID v5 for cross-platform apps** - Works on both iOS (required) and Android (accepted)
+2. **Keep your namespace UUID constant** - Generate once and hardcode it in your app
+3. **Store the mapping** - Keep a record of userId → appAccountToken in your backend for reverse lookup
+4. **Use during purchase** - Include it when calling `purchaseProduct()`
+5. **Use for queries** - Use it when calling `getPurchases()` to filter by user
+6. **Deterministic generation** - Same user should always get the same token
+7. **Max 64 characters** - UUID format is 36 characters, well within the limit
+
+#### Benefits
+
+- **Fraud Prevention**: Platforms can detect suspicious patterns
+- **Multi-device Support**: Link purchases across devices for the same user
+- **User Management**: Query purchases for specific users
+- **Analytics**: Better insights into user purchasing behavior
 
 ### API Reference
 
@@ -949,26 +1075,26 @@ Remove all registered listeners
 
 #### Transaction
 
-| Prop                       | Type                         | Description                                                                                                                  |
-| -------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| **`transactionId`**        | <code>string</code>          | Id associated to the transaction.                                                                                            |
-| **`receipt`**              | <code>string</code>          | Receipt data for validation (iOS only - base64 encoded receipt)                                                              |
-| **`appAccountToken`**      | <code>string \| null</code>  | Account token provided during purchase. Works on both platforms and maps to Google Play's ObfuscatedAccountId on Android.    |
-| **`productIdentifier`**    | <code>string</code>          | <a href="#product">Product</a> Id associated with the transaction.                                                           |
-| **`purchaseDate`**         | <code>string</code>          | Purchase date of the transaction in ISO 8601 format.                                                                         |
-| **`originalPurchaseDate`** | <code>string</code>          | Original purchase date of the transaction in ISO 8601 format (for subscriptions).                                            |
-| **`expirationDate`**       | <code>string</code>          | Expiration date of the transaction in ISO 8601 format (for subscriptions).                                                   |
-| **`isActive`**             | <code>boolean</code>         | Whether the transaction is still active/valid.                                                                               |
-| **`willCancel`**           | <code>boolean \| null</code> | Whether the subscription will be cancelled at the end of the billing cycle, or null if not cancelled. Only available on iOS. |
-| **`purchaseState`**        | <code>string</code>          | Purchase state of the transaction.                                                                                           |
-| **`orderId`**              | <code>string</code>          | Order ID associated with the transaction (Android).                                                                          |
-| **`purchaseToken`**        | <code>string</code>          | Purchase token associated with the transaction (Android).                                                                    |
-| **`isAcknowledged`**       | <code>boolean</code>         | Whether the purchase has been acknowledged (Android).                                                                        |
-| **`quantity`**             | <code>number</code>          | Quantity purchased.                                                                                                          |
-| **`productType`**          | <code>string</code>          | <a href="#product">Product</a> type (inapp or subs).                                                                         |
-| **`isTrialPeriod`**        | <code>boolean</code>         | Whether the transaction is a trial period.                                                                                   |
-| **`isInIntroPricePeriod`** | <code>boolean</code>         | Whether the transaction is in intro price period.                                                                            |
-| **`isInGracePeriod`**      | <code>boolean</code>         | Whether the transaction is in grace period.                                                                                  |
+| Prop                       | Type                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| -------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`transactionId`**        | <code>string</code>          | Id associated to the transaction.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| **`receipt`**              | <code>string</code>          | Receipt data for validation (iOS only - base64 encoded receipt)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| **`appAccountToken`**      | <code>string \| null</code>  | An optional obfuscated identifier that uniquely associates the transaction with a user account in your app. PURPOSE: - Fraud detection: Helps platforms detect irregular activity (e.g., many devices purchasing on the same account) - User linking: Links purchases to in-game characters, avatars, or in-app profiles PLATFORM DIFFERENCES: - iOS: Must be a valid UUID format (e.g., "550e8400-e29b-41d4-a716-446655440000") Apple's StoreKit 2 requires UUID format for the appAccountToken parameter - Android: Can be any obfuscated string (max 64 chars), maps to Google Play's ObfuscatedAccountId Google recommends using encryption or one-way hash SECURITY REQUIREMENTS (especially for Android): - DO NOT store Personally Identifiable Information (PII) like emails in cleartext - Use encryption or a one-way hash to generate an obfuscated identifier - Maximum length: 64 characters (both platforms) - Storing PII in cleartext will result in purchases being blocked by Google Play IMPLEMENTATION EXAMPLE: ```typescript // For iOS: Generate a deterministic UUID from user ID import { v5 as uuidv5 } from 'uuid'; const NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'; // Your app's namespace UUID const appAccountToken = uuidv5(userId, NAMESPACE); // For Android: Can also use UUID or any hashed value // The same UUID approach works for both platforms ``` |
+| **`productIdentifier`**    | <code>string</code>          | <a href="#product">Product</a> Id associated with the transaction.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **`purchaseDate`**         | <code>string</code>          | Purchase date of the transaction in ISO 8601 format.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| **`originalPurchaseDate`** | <code>string</code>          | Original purchase date of the transaction in ISO 8601 format (for subscriptions).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| **`expirationDate`**       | <code>string</code>          | Expiration date of the transaction in ISO 8601 format (for subscriptions).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **`isActive`**             | <code>boolean</code>         | Whether the transaction is still active/valid.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| **`willCancel`**           | <code>boolean \| null</code> | Whether the subscription will be cancelled at the end of the billing cycle, or null if not cancelled. Only available on iOS.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| **`purchaseState`**        | <code>string</code>          | Purchase state of the transaction.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **`orderId`**              | <code>string</code>          | Order ID associated with the transaction (Android).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **`purchaseToken`**        | <code>string</code>          | Purchase token associated with the transaction (Android).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| **`isAcknowledged`**       | <code>boolean</code>         | Whether the purchase has been acknowledged (Android).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| **`quantity`**             | <code>number</code>          | Quantity purchased.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **`productType`**          | <code>string</code>          | <a href="#product">Product</a> type (inapp or subs).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| **`isTrialPeriod`**        | <code>boolean</code>         | Whether the transaction is a trial period.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **`isInIntroPricePeriod`** | <code>boolean</code>         | Whether the transaction is in intro price period.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| **`isInGracePeriod`**      | <code>boolean</code>         | Whether the transaction is in grace period.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 
 #### Product
