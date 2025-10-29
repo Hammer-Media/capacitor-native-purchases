@@ -419,11 +419,13 @@ public class NativePurchasesPlugin extends Plugin {
     String planIdentifier = call.getString("planIdentifier");
     String productType = call.getString("productType", "inapp");
     Number quantity = call.getInt("quantity", 1);
+    String accountIdentifier = call.getString("accountIdentifier");
 
     Log.d(TAG, "Product identifier: " + productIdentifier);
     Log.d(TAG, "Plan identifier: " + planIdentifier);
     Log.d(TAG, "Product type: " + productType);
     Log.d(TAG, "Quantity: " + quantity);
+    Log.d(TAG, "Account identifier: " + (accountIdentifier != null ? "[REDACTED]" : "none"));
 
     // cannot use quantity, because it's done in native modal
     Log.d("CapacitorPurchases", "purchaseProduct: " + productIdentifier);
