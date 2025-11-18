@@ -488,8 +488,14 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
             print("manageSubscriptions")
             Task { @MainActor in
                 do {
+                    // Get the window scene from the plugin's view controller
+                    guard let windowScene = self.bridge?.viewController?.view.window?.windowScene else {
+                        call.reject("Unable to access window scene")
+                        return
+                    }
+                    
                     // Open the App Store subscription management page
-                    try await AppStore.showManageSubscriptions(in: nil)
+                    try await AppStore.showManageSubscriptions(in: windowScene)
                     call.resolve()
                 } catch {
                     print("manageSubscriptions error: \(error)")
@@ -501,5 +507,4 @@ public class NativePurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
             call.reject("Not implemented under iOS 15")
         }
     }
-
 }
